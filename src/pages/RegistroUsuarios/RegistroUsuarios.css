@@ -1,0 +1,60 @@
+/* src/pages/RegisterUserPage/RegisterUserPage.css */
+
+/* Estilos para el fondo y contenedor principal */
+.extranet-container {
+  background-color: #343a40; /* Fondo oscuro */
+  color: #f8f9fa; /* Color de texto claro */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Sombra para profundidad */
+}
+
+/* Encabezado con fondo rojo */
+.extranet-header {
+  background-color: #dc3545; /* Rojo de Bootstrap */
+  color: #fff;
+  padding: 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+/* Estilos para los campos de texto y select */
+.extranet-form-control {
+  background-color: #495057; /* Fondo de input oscuro */
+  border: 1px solid #6c757d; /* Borde gris */
+  color: #f8f9fa;
+  box-shadow: none;
+}
+
+.extranet-form-control:focus {
+  background-color: #495057;
+  border-color: #007bff; /* Borde azul al enfocar */
+  color: #f8f9fa;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Estilos para las etiquetas */
+.extranet-label {
+  color: #ced4da;
+  font-weight: bold;
+}
+
+/* Estilo para los select que muestran "Nothing selected" */
+.form-control:not(:focus):not(:valid) {
+  color: #6c757d;
+}
+
+/* Estilos para los botones */
+.btn-solicitar-usuario {
+  background-color: #dc3545; /* Fondo rojo */
+  border-color: #dc3545;
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.btn-solicitar-usuario:hover {
+  background-color: #c82333; /* Rojo más oscuro al pasar el ratón */
+  border-color: #bd2130;
+}

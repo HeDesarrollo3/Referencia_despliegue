@@ -1,0 +1,273 @@
+// 📂 src/pages/PreRegistro/PreRegistro.tsx
+import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import {
+  getCie10,
+  getTariffProducts,
+  registerOrder,
+  getPreRegistros,
+} from "../../services/api";
+
+import PlanStep from "./steps/PlanStep";
+import PatientStep from "./steps/PatientStep";
+import ProductsStep from "./steps/ProductsStep";
+import SummaryStep from "./steps/SummaryStep";
+
+const PreRegistro: React.FC = () => {
+  // estados del componente
+  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState(1);
+
+  // datos cargados desde backend
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [cie10List, setCie10List] = useState<any[]>([]);
+  const [productList, setProductList] = useState<any[]>([]);
+
+  // lista de pre-registros
+  const [preRegistros, setPreRegistros] = useState<any[]>([]);
+  const [loadingPre, setLoadingPre] = useState(false);
+
+  // formulario del preregistro
+  const [formData, setFormData] = useState<any>({
+    cie10: "",
+    priority: "",
+    observation: "",
+    patientId: "",
+    firstName: "",
+    lastName: "",
+    customerAccountId: "",
+    tariffId: "",
+    products: [{ productId: "" }],
+  });
+
+  // 🔹 función para cargar pre-registros
+  const loadPreRegistros = async (token: string) => {
+    setLoadingPre(true);
+    try {
+      const data = await getPreRegistros(token);
+      setPreRegistros(data);
+    } catch (err) {
+      console.error("❌ Error al cargar pre-registros:", err);
+    } finally {
+      setLoadingPre(false);
+    }
+  };
+
+  // cargar data inicial
+  useEffect(() => {
+    const token = localStorage.getItem("token") || "";
+
+    getCie10().then((cie) => setCie10List(cie));
+
+    getTariffProducts(token).then((accs) => {
+      setAccounts(accs);
+      if (accs.length > 0) {
+        setFormData((prev: any) => ({
+          ...prev,
+          customerAccountId: accs[0].customerAccountId,
+          tariffId: accs[0].tariff.tariffId,
+        }));
+        setProductList(accs[0].tariff.products);
+      }
+    });
+
+    // 📌 cargar lista de pre-registros
+    loadPreRegistros(token);
+  }, []);
+
+  // manejadores de formulario
+  const handleInputChange = (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleProductChange = (index: number, value: string) => {
+    const newProducts = [...formData.products];
+    newProducts[index].productId = value;
+    setFormData({ ...formData, products: newProducts });
+  };
+
+  const handleAddProduct = () => {
+    setFormData({
+      ...formData,
+      products: [...formData.products, { productId: "" }],
+    });
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token") || "";
+    try {
+      await registerOrder(token, formData);
+      alert("✅ Pre-Registro guardado correctamente");
+
+      // 🔄 Reiniciar flujo
+      setShowModal(false);
+      setStep(1);
+      setFormData({
+        cie10: "",
+        priority: "",
+        observation: "",
+        patientId: "",
+        firstName: "",
+        lastName: "",
+        customerAccountId: accounts[0]?.customerAccountId || "",
+        tariffId: accounts[0]?.tariff.tariffId || "",
+        products: [{ productId: "" }],
+      });
+
+      //  recargar la lista de pre-registros
+      loadPreRegistros(token);
+    } catch (err) {
+      alert("❌ Error al guardar la orden. Revisa la consola.");
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="container mt-4">
+      {/* 🔎 Sección buscadores */}
+      <div className="card p-3 mb-4 shadow-sm">
+        <h4>Gestión de Pre-Registros</h4>
+        <div className="row g-3">
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar por nombre"
+            />
+          </div>
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar por documento"
+            />
+          </div>
+          <div className="col-md-4">
+            <input type="date" className="form-control" />
+          </div>
+        </div>
+      </div>
+
+      {/* 📋 Tabla de preregistros */}
+      <div className="card p-3 shadow-sm">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h5>Listado de Pre-Registros</h5>
+          <Button variant="primary" onClick={() => setShowModal(true)}>
+            + Nuevo PreRegistro
+          </Button>
+        </div>
+
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>Fecha de creacion</th>
+              <th>Paciente</th>
+              <th>Documento</th>
+              <th>Orden</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loadingPre && (
+              <tr>
+                <td colSpan={4}>Cargando...</td>
+              </tr>
+            )}
+            {!loadingPre && preRegistros.length === 0 && (
+              <tr>
+                <td colSpan={4}>No hay pre-registros</td>
+              </tr>
+            )}
+            {!loadingPre &&
+              preRegistros.map((item: any) => (
+                <tr key={item.orderId}>
+                  <td>{item.creationDate}</td>
+                  <td>{item.patientName}</td>
+                  <td>{item.patientId}</td>
+                  <td>{item.orderNumber}</td>
+                  <td>{item.state || "Pendiente"}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 🟦 Modal con formulario en pasos */}
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        size="lg"
+        backdrop="static"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Nuevo PreRegistro</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {step === 1 && (
+            <PlanStep
+              customerAccountId={formData.customerAccountId}
+              tariffId={formData.tariffId}
+              accounts={accounts}
+              onSelect={(accountId, tariffId) =>
+                setFormData({
+                  ...formData,
+                  customerAccountId: accountId,
+                  tariffId,
+                })
+              }
+              patientId={formData.patientId}
+              firstName={formData.firstName}
+            />
+          )}
+
+          {step === 2 && (
+            <PatientStep
+              formData={formData}
+              cie10List={cie10List}
+              onChange={handleInputChange}
+              onPatientSelect={(patient) =>
+                setFormData({
+                  ...formData,
+                  patientId: patient.patientId,
+                  firstName: patient.firstName,
+                  lastName: patient.lastName,
+                })
+              }
+            />
+          )}
+
+          {step === 3 && (
+            <ProductsStep
+              products={formData.products}
+              productList={productList}
+              onChange={handleProductChange}
+              onAdd={handleAddProduct}
+            />
+          )}
+
+          {step === 4 && (
+            <SummaryStep formData={formData} productList={productList} />
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          {step > 1 && (
+            <Button variant="secondary" onClick={() => setStep(step - 1)}>
+              Atrás
+            </Button>
+          )}
+          {step < 4 && (
+            <Button onClick={() => setStep(step + 1)}>Siguiente</Button>
+          )}
+          {step === 4 && (
+            <Button variant="success" onClick={handleSubmit}>
+              Guardar
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default PreRegistro;
