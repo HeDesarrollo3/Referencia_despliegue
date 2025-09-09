@@ -1,24 +1,20 @@
-// src/components/common/Table.tsx
 import React from "react";
+import { Table as BootstrapTable } from "react-bootstrap";
 
-type Column<T> = {
+export interface Column<T> {
   header: string;
-  accessor: string; // ahora es string, no solo keyof T (permite "product.name")
-};
-
-type Props<T> = {
-  columns: Column<T>[];
-  data: T[];
-};
-
-// Función para obtener valores anidados usando "dot notation"
-function getValueByAccessor(obj: any, accessor: string): any {
-  return accessor.split(".").reduce((acc, key) => acc?.[key], obj);
+  accessor: keyof T | string;
 }
 
-function Table<T extends object>({ columns, data }: Props<T>) {
+interface Props<T> {
+  columns: Column<T>[];
+  data: T[];
+  onRowClick?: (row: T) => void; // 👈 ahora acepta esta prop
+}
+
+function Table<T>({ columns, data, onRowClick }: Props<T>) {
   return (
-    <table className="table table-bordered table-striped">
+    <BootstrapTable striped bordered hover responsive>
       <thead>
         <tr>
           {columns.map((col, idx) => (
@@ -27,15 +23,22 @@ function Table<T extends object>({ columns, data }: Props<T>) {
         </tr>
       </thead>
       <tbody>
-        {data.map((row, rIdx) => (
-          <tr key={rIdx}>
-            {columns.map((col, cIdx) => (
-              <td key={cIdx}>{String(getValueByAccessor(row, col.accessor) ?? "")}</td>
+        {data.map((row, rowIndex) => (
+          <tr
+            key={rowIndex}
+            style={{ cursor: onRowClick ? "pointer" : "default" }}
+            onClick={() => onRowClick && onRowClick(row)} // 👈 click fila
+          >
+            {columns.map((col, colIndex) => (
+              <td key={colIndex}>
+                {/* @ts-ignore para string en accessor */}
+                {row[col.accessor as keyof T]}
+              </td>
             ))}
           </tr>
         ))}
       </tbody>
-    </table>
+    </BootstrapTable>
   );
 }
 

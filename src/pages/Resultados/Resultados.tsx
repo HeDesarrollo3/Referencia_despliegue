@@ -1,6 +1,6 @@
 // src/pages/Resultados/Resultados.tsx
 import React, { useState, useEffect } from "react";
-import { Spinner, Alert, Form, InputGroup, Button } from "react-bootstrap";
+import { Spinner, Alert, Form, InputGroup } from "react-bootstrap";
 import Table from "../../components/common/Table";
 
 interface ProductData {
@@ -20,6 +20,7 @@ const API_URL = "http://localhost:3000/api/v1/higuera-escalante/orders/by-term";
 
 const Resultados: React.FC = () => {
   const [data, setData] = useState<ProductData[]>([]);
+  const [filteredData, setFilteredData] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,11 +45,10 @@ const Resultados: React.FC = () => {
     );
   };
 
-  // 🔎 Buscar / cargar resultados
-  const handleSearch = async () => {
+  // 📌 Cargar todo al inicio
+  const fetchAllResults = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No hay token, por favor inicie sesión");
@@ -59,17 +59,16 @@ const Resultados: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(
-          searchTerm.trim() ? { term: searchTerm } : { term: "" } // 👈 si no hay búsqueda, manda vacío
-        ),
+        body: JSON.stringify({ term: "" }), // 👈 siempre carga todo
       });
 
       if (!response.ok) throw new Error("Error al consultar la API");
 
       const result = await response.json();
-      console.log("API response:", result);
+      const transformed = transformResponse(result);
 
-      setData(transformResponse(result));
+      setData(transformed);
+      setFilteredData(transformed); // 👈 inicializa también el filtrado
     } catch (err: any) {
       setError(err.message || "Error desconocido");
     } finally {
@@ -77,10 +76,27 @@ const Resultados: React.FC = () => {
     }
   };
 
-  // 📌 Cargar todo al inicio
   useEffect(() => {
-    handleSearch();
+    fetchAllResults();
   }, []);
+
+  // 🔎 Filtrado en memoria
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredData(data);
+    } else {
+      const term = searchTerm.toLowerCase();
+      const newFiltered = data.filter(
+        (item) =>
+          item.patientId.toLowerCase().includes(term) ||
+          item.patientName.toLowerCase().includes(term) ||
+          (item.orderNumber || "").toLowerCase().includes(term) ||
+          item.productName.toLowerCase().includes(term) ||
+          item.productCode.toLowerCase().includes(term)
+      );
+      setFilteredData(newFiltered);
+    }
+  }, [searchTerm, data]);
 
   // 📋 Columnas para Table
   const columns = [
@@ -100,23 +116,23 @@ const Resultados: React.FC = () => {
     <div className="container mt-4">
       <h3>Resultados</h3>
 
+      {/* Campo de búsqueda */}
       <InputGroup className="mb-3">
         <Form.Control
-          placeholder="Buscar por documento, nombre de paciente, prueba o número de orden..."
+          placeholder="Buscar por documento, nombre de paciente, número de orden o prueba..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button variant="primary" onClick={handleSearch} disabled={loading}>
-          {loading ? <Spinner size="sm" animation="border" /> : "Buscar"}
-        </Button>
       </InputGroup>
 
       {error && <Alert variant="danger">{error}</Alert>}
       {loading && <Spinner animation="border" />}
-      {!loading && data.length === 0 && !error && (
+      {!loading && filteredData.length === 0 && !error && (
         <Alert variant="warning">No hay resultados disponibles</Alert>
       )}
-      {data.length > 0 && <Table<ProductData> columns={columns} data={data} />}
+      {filteredData.length > 0 && (
+        <Table<ProductData> columns={columns} data={filteredData} />
+      )}
     </div>
   );
 };

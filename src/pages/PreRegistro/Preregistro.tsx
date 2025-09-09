@@ -14,20 +14,25 @@ import ProductsStep from "./steps/ProductsStep";
 import SummaryStep from "./steps/SummaryStep";
 
 const PreRegistro: React.FC = () => {
-  // estados del componente
   const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState(1);
 
-  // datos cargados desde backend
   const [accounts, setAccounts] = useState<any[]>([]);
   const [cie10List, setCie10List] = useState<any[]>([]);
   const [productList, setProductList] = useState<any[]>([]);
 
-  // lista de pre-registros
+  // 🔹 lista de pre-registros
+  const [allPreRegistros, setAllPreRegistros] = useState<any[]>([]);
   const [preRegistros, setPreRegistros] = useState<any[]>([]);
   const [loadingPre, setLoadingPre] = useState(false);
 
-  // formulario del preregistro
+  // 🔹 filtros
+  const [filters, setFilters] = useState({
+    nombre: "",
+    documento: "",
+    fecha: "",
+  });
+
   const [formData, setFormData] = useState<any>({
     cie10: "",
     priority: "",
@@ -40,11 +45,12 @@ const PreRegistro: React.FC = () => {
     products: [{ productId: "" }],
   });
 
-  // 🔹 función para cargar pre-registros
+  // 🔹 cargar pre-registros
   const loadPreRegistros = async (token: string) => {
     setLoadingPre(true);
     try {
       const data = await getPreRegistros(token);
+      setAllPreRegistros(data);
       setPreRegistros(data);
     } catch (err) {
       console.error("❌ Error al cargar pre-registros:", err);
@@ -52,6 +58,34 @@ const PreRegistro: React.FC = () => {
       setLoadingPre(false);
     }
   };
+
+  // 🔹 aplicar filtros
+  const applyFilters = () => {
+    let filtered = [...allPreRegistros];
+
+    if (filters.nombre) {
+      filtered = filtered.filter((item) =>
+        item.patientName?.toLowerCase().includes(filters.nombre.toLowerCase())
+      );
+    }
+    if (filters.documento) {
+      filtered = filtered.filter((item) =>
+        item.patientId?.toLowerCase().includes(filters.documento.toLowerCase())
+      );
+    }
+    if (filters.fecha) {
+      filtered = filtered.filter((item) =>
+        item.creationDate.startsWith(filters.fecha)
+      );
+    }
+
+    setPreRegistros(filtered);
+  };
+
+  // ejecutar filtros cada vez que cambien
+  useEffect(() => {
+    applyFilters();
+  }, [filters, allPreRegistros]);
 
   // cargar data inicial
   useEffect(() => {
@@ -71,11 +105,9 @@ const PreRegistro: React.FC = () => {
       }
     });
 
-    // 📌 cargar lista de pre-registros
     loadPreRegistros(token);
   }, []);
 
-  // manejadores de formulario
   const handleInputChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -99,7 +131,6 @@ const PreRegistro: React.FC = () => {
       await registerOrder(token, formData);
       alert("✅ Pre-Registro guardado correctamente");
 
-      // 🔄 Reiniciar flujo
       setShowModal(false);
       setStep(1);
       setFormData({
@@ -114,7 +145,6 @@ const PreRegistro: React.FC = () => {
         products: [{ productId: "" }],
       });
 
-      //  recargar la lista de pre-registros
       loadPreRegistros(token);
     } catch (err) {
       alert("❌ Error al guardar la orden. Revisa la consola.");
@@ -124,7 +154,7 @@ const PreRegistro: React.FC = () => {
 
   return (
     <div className="container mt-4">
-      {/* 🔎 Sección buscadores */}
+      {/* 🔎 Filtros */}
       <div className="card p-3 mb-4 shadow-sm">
         <h4>Gestión de Pre-Registros</h4>
         <div className="row g-3">
@@ -133,6 +163,8 @@ const PreRegistro: React.FC = () => {
               type="text"
               className="form-control"
               placeholder="Buscar por nombre"
+              value={filters.nombre}
+              onChange={(e) => setFilters({ ...filters, nombre: e.target.value })}
             />
           </div>
           <div className="col-md-4">
@@ -140,10 +172,19 @@ const PreRegistro: React.FC = () => {
               type="text"
               className="form-control"
               placeholder="Buscar por documento"
+              value={filters.documento}
+              onChange={(e) =>
+                setFilters({ ...filters, documento: e.target.value })
+              }
             />
           </div>
           <div className="col-md-4">
-            <input type="date" className="form-control" />
+            <input
+              type="date"
+              className="form-control"
+              value={filters.fecha}
+              onChange={(e) => setFilters({ ...filters, fecha: e.target.value })}
+            />
           </div>
         </div>
       </div>
@@ -160,7 +201,7 @@ const PreRegistro: React.FC = () => {
         <table className="table table-striped">
           <thead>
             <tr>
-              <th>Fecha de creacion</th>
+              <th>Fecha de creación</th>
               <th>Paciente</th>
               <th>Documento</th>
               <th>Orden</th>
@@ -170,12 +211,12 @@ const PreRegistro: React.FC = () => {
           <tbody>
             {loadingPre && (
               <tr>
-                <td colSpan={4}>Cargando...</td>
+                <td colSpan={5}>Cargando...</td>
               </tr>
             )}
             {!loadingPre && preRegistros.length === 0 && (
               <tr>
-                <td colSpan={4}>No hay pre-registros</td>
+                <td colSpan={5}>No hay pre-registros</td>
               </tr>
             )}
             {!loadingPre &&

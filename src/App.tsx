@@ -14,6 +14,8 @@ import PreRegistro from "./pages/PreRegistro/Preregistro";
 import Resultados from "./pages/Resultados/Resultados";
 import Sidebar from "./components/layout/Sidebar";
 import Topbar from "./components/layout/Topbar";
+import GestorDeNovedades from "./pages/GestorDeNovedades/GestorDeNovedades";
+import PortafolioPage from "./pages/Portafolio/PortafolioPage";
 
 // =============================
 // Contexto de autenticación
@@ -55,6 +57,8 @@ const MainLayout: React.FC = () => {
         return "Resultados de Exámenes";
       case "/preregistro":
         return "Pre-Registro de Pacientes";
+        case "/GestorDeNovedades":
+        return "Actualizacion de preordenes de pacientes";
       default:
         return "Panel";
     }
@@ -135,6 +139,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/resultados" element={<Resultados />} />
             <Route path="/preregistro" element={<PreRegistro />} />
+            <Route path="/GestorDeNovedades" element={<GestorDeNovedades />} />
+            <Route path="/portafolio" element={<PortafolioPage />} />
           </Route>
 
           {/* Página 404 */}

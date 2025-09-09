@@ -4,6 +4,8 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import PreRegistro  from '../pages/PreRegistro/Preregistro';
 // import Resultados from '../pages/Resultados/Resultados';
 import RegistroUsuarios from '../pages/RegistroUsuarios/RegistroUsuarios'; 
+import GestorDeNovedades from '../pages/GestorDeNovedades/GestorDeNovedades';
+import PortafolioPage from '../pages/Portafolio/PortafolioPage';
 
 
 const AppRoutes = () => (
@@ -14,6 +16,8 @@ const AppRoutes = () => (
       <Route path="/pre-registro" element={<PreRegistro />} />
       {/* <Route path="/resultados" element={<Resultados />} />  */}
       <Route path="/registro-usuarios" element={<RegistroUsuarios />} />
+      <Route path="/GestorDeNovedades" element={<GestorDeNovedades />} />
+      <Route path="/portafolio" element={<PortafolioPage />} />
       {/* {/* Agrega más rutas aquí */}
     </Routes>
   </BrowserRouter>

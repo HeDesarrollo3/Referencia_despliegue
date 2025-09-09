@@ -1,7 +1,8 @@
-// src/pages/Dashboard.tsx
+// src/pages/Dashboard/Dashboard.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card } from "react-bootstrap";
+import { FiFileText, FiAlertCircle, FiClipboard, FiSearch } from "react-icons/fi";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -11,75 +12,140 @@ const Dashboard: React.FC = () => {
       title: "Consulta de Resultados",
       text: "Visualiza los resultados de tus exámenes.",
       route: "/resultados",
+      icon: <FiSearch size={32} className="text-primary mb-3" />,
     },
     {
       title: "Gestor de Novedades",
       text: "Administra novedades y reportes.",
-      route: "/novedades",
+      route: "/GestorDeNovedades",
+      icon: <FiAlertCircle size={32} className="text-danger mb-3" />,
     },
     {
       title: "Portafolio de Pruebas",
       text: "Explora el portafolio de pruebas disponibles.",
       route: "/portafolio",
+      icon: <FiFileText size={32} className="text-success mb-3" />,
     },
     {
       title: "Pre Registro",
       text: "Registra pacientes de forma anticipada.",
       route: "/preregistro",
+      icon: <FiClipboard size={32} className="text-warning mb-3" />,
     },
   ];
 
   return (
-    <Container fluid>
+    <Container fluid className="py-4">
+      <h2 className="mb-4 fw-bold">Panel Principal</h2>
       <Row>
-        {/* Sidebar */}
-        {/* <Col md={2} className="bg-dark text-white vh-100 p-3">
-          <h4 className="text-center mb-4">Menú</h4>
-          <ul className="nav flex-column">
-            <li className="nav-item">
-              <a href="/dashboard" className="nav-link text-white">
-                Inicio
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="/resultados" className="nav-link text-white">
-                Resultados
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="/preregistro" className="nav-link text-white">
-                Pre-registro
-              </a>
-            </li>
-          </ul>
-        </Col> */}
-
-        {/* Contenido principal */}
-        <Col md={10} className="p-4">
-          <h2 className="mb-4">Dashboard</h2>
-          <Row>
-            {cards.map((card, index) => (
-              <Col key={index} md={6} lg={3} className="mb-4">
-                <Card
-                  className="shadow-sm h-100"
-                  role="button"
-                  onClick={() => navigate(card.route)}
-                >
-                  <Card.Body>
-                    <Card.Title>{card.title}</Card.Title>
-                    <Card.Text>{card.text}</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Col>
+        {cards.map((card, index) => (
+          <Col key={index} md={6} lg={3} className="mb-4">
+            <Card
+              className="shadow-sm h-100 border-0 rounded-3 card-hover"
+              role="button"
+              onClick={() => navigate(card.route)}
+            >
+              <Card.Body className="d-flex flex-column align-items-center text-center">
+                {card.icon}
+                <Card.Title className="fw-semibold">{card.title}</Card.Title>
+                <Card.Text className="text-muted">{card.text}</Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
       </Row>
     </Container>
   );
 };
 
 export default Dashboard;
+
+
+
+
+
+//este es 09/09/2025 // src/pages/Dashboard.tsx
+// import React from "react";
+// import { useNavigate } from "react-router-dom";
+// import { Container, Row, Col, Card } from "react-bootstrap";
+
+// const Dashboard: React.FC = () => {
+//   const navigate = useNavigate();
+
+//   const cards = [
+//     {
+//       title: "Consulta de Resultados",
+//       text: "Visualiza los resultados de tus exámenes.",
+//       route: "/resultados",
+//     },
+//     {
+//       title: "Gestor de Novedades",
+//       text: "Administra novedades y reportes.",
+//       route: "/GestorDeNovedades",
+//     },
+//     {
+//       title: "Portafolio de Pruebas",
+//       text: "Explora el portafolio de pruebas disponibles.",
+//       route: "/portafolio",
+//     },
+//     {
+//       title: "Pre Registro",
+//       text: "Registra pacientes de forma anticipada.",
+//       route: "/preregistro",
+//     },
+//   ];
+
+//   return (
+//     <Container fluid>
+//       <Row>
+//         {/* Sidebar */}
+//         {/* <Col md={2} className="bg-dark text-white vh-100 p-3">
+//           <h4 className="text-center mb-4">Menú</h4>
+//           <ul className="nav flex-column">
+//             <li className="nav-item">
+//               <a href="/dashboard" className="nav-link text-white">
+//                 Inicio
+//               </a>
+//             </li>
+//             <li className="nav-item">
+//               <a href="/resultados" className="nav-link text-white">
+//                 Resultados
+//               </a>
+//             </li>
+//             <li className="nav-item">
+//               <a href="/preregistro" className="nav-link text-white">
+//                 Pre-registro
+//               </a>
+//             </li>
+//           </ul>
+//         </Col> */}
+
+//         {/* Contenido principal */}
+//         <Col md={10} className="p-4">
+//           <h2 className="mb-4">Dashboard</h2>
+//           <Row>
+//             {cards.map((card, index) => (
+//               <Col key={index} md={6} lg={3} className="mb-4">
+//                 <Card
+//                   className="shadow-sm h-100"
+//                   role="button"
+//                   onClick={() => navigate(card.route)}
+//                 >
+//                   <Card.Body>
+//                     <Card.Title>{card.title}</Card.Title>
+//                     <Card.Text>{card.text}</Card.Text>
+//                   </Card.Body>
+//                 </Card>
+//               </Col>
+//             ))}
+//           </Row>
+//         </Col>
+//       </Row>
+//     </Container>
+//   );
+// };
+
+// export default Dashboard;
 
 
 // import React from 'react';
