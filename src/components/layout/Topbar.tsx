@@ -92,9 +92,20 @@ interface TopbarProps {
 
 const Topbar: React.FC<TopbarProps> = ({ pageTitle, userName, onLogout }) => {
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm px-4">
-      <Navbar.Brand className="fw-bold text-primary">{pageTitle}</Navbar.Brand>
+    <Navbar
+      bg="white"
+      expand="lg"
+      className="shadow-sm px-4"
+      style={{ height: "60px" }}
+    >
+      {/* Título de la página */}
+      <Navbar.Brand className="fw-bold text-primary">
+        {pageTitle}
+      </Navbar.Brand>
+
+      {/* Acciones a la derecha */}
       <Nav className="ms-auto d-flex align-items-center">
+        {/* Notificaciones */}
         <Nav.Link className="position-relative me-3">
           <FiBell size={20} />
           <Badge
@@ -105,10 +116,14 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, userName, onLogout }) => {
             3
           </Badge>
         </Nav.Link>
+
+        {/* Menú de usuario */}
         <Dropdown align="end">
-          <Dropdown.Toggle variant="light" id="dropdown-basic">
-            <FiUser size={20} className="me-1" /> {userName}
+          <Dropdown.Toggle variant="light" id="dropdown-basic" className="d-flex align-items-center">
+            <FiUser size={20} className="me-1" />
+            <span className="fw-semibold">{userName}</span>
           </Dropdown.Toggle>
+
           <Dropdown.Menu>
             <Dropdown.Item>Perfil</Dropdown.Item>
             <Dropdown.Item>Configuración</Dropdown.Item>

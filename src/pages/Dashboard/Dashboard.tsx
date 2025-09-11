@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import { FiFileText, FiAlertCircle, FiClipboard, FiSearch } from "react-icons/fi";
+// import MainLayout from "../../components/layout/MainLayout";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -32,16 +33,24 @@ const Dashboard: React.FC = () => {
       route: "/preregistro",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
     },
+     {
+      title: "Tarifaria",
+      text: "Lista de productos tarifarios.",
+      route: "/tarifaria",
+      icon: <FiClipboard size={32} className="text-warning mb-3" />,
+    },
   ];
 
   return (
-    <Container fluid className="py-4">
-      <h2 className="mb-4 fw-bold">Panel Principal</h2>
+    // <MainLayout pageTitle="Dashboard" userName="Carlos">
+    <Container fluid className="py-3">
+      <h2 className="mb-5 fw-bold">Panel Principal</h2>
       <Row>
         {cards.map((card, index) => (
-          <Col key={index} md={6} lg={3} className="mb-4">
+          <Col key={index} md={8} lg={3} className="mb-3">
             <Card
-              className="shadow-sm h-100 border-0 rounded-3 card-hover"
+            
+              className="shadow-sm h-100 border-0 rounded-3 card-hover card-img-top"
               role="button"
               onClick={() => navigate(card.route)}
             >
@@ -55,6 +64,7 @@ const Dashboard: React.FC = () => {
         ))}
       </Row>
     </Container>
+    // </MainLayout>
   );
 };
 

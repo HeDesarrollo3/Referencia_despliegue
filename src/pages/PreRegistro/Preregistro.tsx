@@ -12,6 +12,7 @@ import PlanStep from "./steps/PlanStep";
 import PatientStep from "./steps/PatientStep";
 import ProductsStep from "./steps/ProductsStep";
 import SummaryStep from "./steps/SummaryStep";
+import Table, { Column } from "../../components/common/Table"; // 👈 importamos tu tabla genérica
 
 const PreRegistro: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
@@ -44,6 +45,15 @@ const PreRegistro: React.FC = () => {
     tariffId: "",
     products: [{ productId: "" }],
   });
+
+  // 🔹 columnas de la tabla
+  const columns: Column<any>[] = [
+    { header: "Fecha de creación", accessor: "creationDate" },
+    { header: "Paciente", accessor: "patientName" },
+    { header: "Documento", accessor: "patientId" },
+    { header: "Orden", accessor: "orderNumber" },
+    { header: "Estado", accessor: "state", render: (row) => row.state || "Pendiente" },
+  ];
 
   // 🔹 cargar pre-registros
   const loadPreRegistros = async (token: string) => {
@@ -155,7 +165,7 @@ const PreRegistro: React.FC = () => {
   return (
     <div className="container mt-4">
       {/* 🔎 Filtros */}
-      <div className="card p-3 mb-4 shadow-sm">
+      <div className="card p-3 mb-4 shadow-sm bg-darger">
         <h4>Gestión de Pre-Registros</h4>
         <div className="row g-3">
           <div className="col-md-4">
@@ -189,48 +199,28 @@ const PreRegistro: React.FC = () => {
         </div>
       </div>
 
-      {/* 📋 Tabla de preregistros */}
+      {/* Tabla pre-registro */}
       <div className="card p-3 shadow-sm">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5>Listado de Pre-Registros</h5>
-          <Button variant="primary" onClick={() => setShowModal(true)}>
+          <Button variant="danger" onClick={() => setShowModal(true)}>
             + Nuevo PreRegistro
           </Button>
         </div>
 
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Fecha de creación</th>
-              <th>Paciente</th>
-              <th>Documento</th>
-              <th>Orden</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadingPre && (
-              <tr>
-                <td colSpan={5}>Cargando...</td>
-              </tr>
-            )}
-            {!loadingPre && preRegistros.length === 0 && (
-              <tr>
-                <td colSpan={5}>No hay pre-registros</td>
-              </tr>
-            )}
-            {!loadingPre &&
-              preRegistros.map((item: any) => (
-                <tr key={item.orderId}>
-                  <td>{item.creationDate}</td>
-                  <td>{item.patientName}</td>
-                  <td>{item.patientId}</td>
-                  <td>{item.orderNumber}</td>
-                  <td>{item.state || "Pendiente"}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        {loadingPre ? (
+          <p>Cargando...</p>
+        ) : preRegistros.length === 0 ? (
+          <p>No hay pre-registros</p>
+        ) : (
+          <Table
+            columns={columns}
+            data={preRegistros}
+            striped
+            hover
+            onRowClick={(row) => console.log("👉 clic en fila:", row)}
+          />
+        )}
       </div>
 
       {/* 🟦 Modal con formulario en pasos */}

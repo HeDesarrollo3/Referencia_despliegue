@@ -127,8 +127,6 @@
 // };
 
 // export default Sidebar;
-
-
 // src/components/layout/Sidebar.tsx
 import React from "react";
 import { Nav } from "react-bootstrap";
@@ -139,6 +137,7 @@ import {
   FiAlertCircle,
   FiFileText,
   FiClipboard,
+  FiDollarSign,
 } from "react-icons/fi";
 
 const Sidebar: React.FC = () => {
@@ -150,23 +149,29 @@ const Sidebar: React.FC = () => {
     { to: "/resultados", label: "Resultados", icon: <FiSearch /> },
     { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
-    
+    { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
   ];
 
   return (
     <div
-      className="d-flex flex-column p-3 text-white vh-100"
-      style={{ width: "250px", backgroundColor: "#1f2937" }}
+      className="d-flex flex-column text-white position-fixed vh-100"
+      style={{
+        width: "250px",
+        backgroundColor: "#1f2937", // gris oscuro
+        left: 0,
+        top: 0,
+        padding: "1rem",
+      }}
     >
       <h3 className="text-center mb-4 fw-bold">HE</h3>
-      <Nav className="flex-column">
+      <Nav className="flex-column mb-auto">
         {links.map((link) => (
           <Nav.Item key={link.to}>
             <Nav.Link
               as={Link}
               to={link.to}
               className={`d-flex align-items-center text-white mb-2 ${
-                location.pathname === link.to ? "active" : ""
+                location.pathname === link.to ? "active fw-bold" : ""
               }`}
             >
               <span className="me-2">{link.icon}</span>

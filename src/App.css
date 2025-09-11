@@ -85,3 +85,8 @@
 main {
   background-color: #f5f6f8;
 }
+
+/* Puedes agregar esto a un archivo CSS global o a un módulo CSS */
+.text-nowrap {
+  white-space: nowrap;
+}

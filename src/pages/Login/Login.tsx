@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Button  from "../../components/common/Button";
 import { Alert } from "react-bootstrap";
 
-const API_URL = "http://localhost:3000/api/v1/higuera-escalante/auth/login";
+const API_URL = "http://192.168.11.14:3000/api/v1/higuera-escalante/auth/login";
 
 function Login() {
   const navigate = useNavigate();

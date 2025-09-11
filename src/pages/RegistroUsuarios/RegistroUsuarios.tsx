@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 
 const CUSTOMERS_URL =
-  "http://localhost:3000/api/v1/higuera-escalante/customers";
+  "http://192.168.11.14:3000/api/v1/higuera-escalante/customers";
 const REGISTER_URL =
-  "http://localhost:3000/api/v1/higuera-escalante/users/register";
+  "http://192.168.11.14:3000/api/v1/higuera-escalante/users/register";
 
 const RegisterUserPage = () => {
   const navigate = useNavigate();

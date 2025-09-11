@@ -1,26 +1,71 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from '../pages/Login/Login';
-import Dashboard from '../pages/Dashboard/Dashboard';
-import PreRegistro  from '../pages/PreRegistro/Preregistro';
-// import Resultados from '../pages/Resultados/Resultados';
-import RegistroUsuarios from '../pages/RegistroUsuarios/RegistroUsuarios'; 
-import GestorDeNovedades from '../pages/GestorDeNovedades/GestorDeNovedades';
-import PortafolioPage from '../pages/Portafolio/PortafolioPage';
+// src/routes/index.tsx
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "../components/layout/MainLayout";
+import DashboardPage from "../pages/Dashboard/Dashboard";
+import PreregistroPage from "../pages/PreRegistro/Preregistro";
+import ResultadosPage from "../pages/Resultados/Resultados";
+import GestorNovedadesPage from "../pages/GestorDeNovedades/GestorDeNovedades";
+import PortafolioPage from "../pages/Portafolio/PortafolioPage";
+import TarifariaPage from "../pages/Tarifaria/Tarifaria";
+import Login from "../pages/Login/Login";
+import RegistroUsuarios from "../pages/RegistroUsuarios/RegistroUsuarios";
 
-
-const AppRoutes = () => (
-  <BrowserRouter>
+function AppRoutes() {
+  return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/pre-registro" element={<PreRegistro />} />
-      {/* <Route path="/resultados" element={<Resultados />} />  */}
-      <Route path="/registro-usuarios" element={<RegistroUsuarios />} />
-      <Route path="/GestorDeNovedades" element={<GestorDeNovedades />} />
-      <Route path="/portafolio" element={<PortafolioPage />} />
-      {/* {/* Agrega más rutas aquí */}
+ <Route path="/login" element={<Login />} />
+  <Route path="/RegistroUsuarios" element={<RegistroUsuarios />} />
+
+      <Route
+        path="/dashboard"
+        element={
+          <MainLayout pageTitle="Inicio" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <DashboardPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/preregistro"
+        element={
+          <MainLayout pageTitle="Preregistro" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <PreregistroPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/resultados"
+        element={
+          <MainLayout pageTitle="Resultados" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <ResultadosPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/GestorDeNovedades"
+        element={
+          <MainLayout pageTitle="Novedades" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <GestorNovedadesPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/portafolio"
+        element={
+          <MainLayout pageTitle="Portafolio" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <PortafolioPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/tarifaria"
+        element={
+          <MainLayout pageTitle="Tarifaria" userName="Usuario" onLogout={() => console.log("Logout")}>
+            <TarifariaPage />
+          </MainLayout>
+        }
+      />
     </Routes>
-  </BrowserRouter>
-);
+  );
+}
 
 export default AppRoutes;

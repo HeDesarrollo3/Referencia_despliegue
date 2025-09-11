@@ -1,8 +1,11 @@
 // src/pages/PreRegistro/services/api.ts
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/v1/higuera-escalante";
+// const API_URL = "http://localhost:3000/api/v1/higuera-escalante";
+const API_URL = "http://192.168.11.14:3000/api/v1/higuera-escalante";
 
+
+//buscar paciente por tipo y número de identificación
 
 export const findPatient = async (token: string, identificationType: string, identification: string) => {
   const res = await axios.post(
@@ -12,6 +15,9 @@ export const findPatient = async (token: string, identificationType: string, ide
   );
   return res.data.patients || [];
 };
+
+
+//registro de paciente ES post
 
 export const registerPatient = async (token: string, patientData: any) => {
   const res = await axios.post(
@@ -32,6 +38,7 @@ export const getCie10 = async () => {
 
 
 // productos tarifario y registrar orden sí requieren token y son POST
+
 export const getTariffProducts = async (token: string) => {
   const res = await axios.post(
     `${API_URL}/tariff-product`,
@@ -42,8 +49,9 @@ export const getTariffProducts = async (token: string) => {
 };
 
 //registro preorden
+
 export const registerOrder = async (token: string, formData: any) => {
-  // 🔹 limpiamos el payload
+  //  limpiamos el payload
   const payload: any = {
     cie10: formData.cie10,
     priority: formData.priority,
@@ -68,35 +76,87 @@ export const registerOrder = async (token: string, formData: any) => {
   }
 };
 
-//  obtener lista de pre-registros (órdenes)
+/// ✅ obtener lista de pre-registros (órdenes)
+
 export const getPreRegistros = async (token: string) => {
   try {
     const res = await axios.post(
-      `${API_URL}/orders/by-term`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
+      `${API_URL}/orders/by-term/`,
+      {}, // body vacío, a menos que quieras pasar filtros
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
-    // 📌 res.data es un array de pacientes con sus órdenes
-    const patients = res.data || [];
+    const pacientes = res.data;
 
-    // 📌 aplanar pacientes + sus órdenes
-    const orders = patients.flatMap((p: any) =>
+    console.log("📌 Pre-registros desde API:", pacientes);
+
+    // transformamos pacientes+órdenes
+    const orders = pacientes.flatMap((p: any) =>
       (p.orders || []).map((o: any) => ({
         orderId: o.orderId,
-        creationDate: o.creationDate,
         orderNumber: o.orderNumber,
         state: o.state,
-        patientName: `${p.firstName} ${p.lastName} ${p.surName || ""}`,
-        patientId: p.identification,
+        creationDate: o.creationDate,
+        cie10: o.cie10,
+        observation: o.observation,
+        // datos del paciente
+        patientId: p.patientId,
+        identification: p.identification,
+        identificationType: p.identificationType,
+        patientName: `${p.firstName ?? ""} ${p.middleName ?? ""} ${p.lastName ?? ""} ${p.surName ?? ""}`.trim(),
+        gender: p.gender,
+        birthDate: p.birthDate,
+        mobileNumber: p.mobileNumber,
+        email: p.email,
+        // cliente y tarifa
+        customerId: p.customer?.customerId ?? "",
+        customerAccountId: o.customerAccountId,
+        tariffId: o.tariffId,
+        customerName: o.customer?.name ?? "",
+        customerAccountName: o.customerAccount?.name ?? "",
+        tariffName: o.tariff?.name ?? "",
       }))
     );
 
-    console.log("📌 Pre-registros mapeados:", orders);
-
+    console.log("✅ Pre-registros transformados:", orders);
     return orders;
   } catch (err: any) {
     console.error("❌ Error al obtener pre-registros:", err.response?.data || err.message);
     throw err;
   }
 };
+
+
+
+
+// actualizar orden
+export const updateOrder = async (token: string, orderId: string, orderData: any) => {
+  try {
+    const res = await fetch(
+      `${API_URL}/orders/${orderId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al actualizar la orden");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("❌ Error en updateOrder:", error);
+    throw error;
+  }
+};
+
