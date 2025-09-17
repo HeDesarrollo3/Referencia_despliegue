@@ -83,6 +83,7 @@
 import React from "react";
 import { Navbar, Nav, Badge, Dropdown } from "react-bootstrap";
 import { FiBell, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 interface TopbarProps {
   pageTitle: string;
@@ -91,6 +92,14 @@ interface TopbarProps {
 }
 
 const Topbar: React.FC<TopbarProps> = ({ pageTitle, userName, onLogout }) => {
+
+const navigate = useNavigate();
+
+  const handleLogoutClick = () => {
+    onLogout(); // borra token y estado
+    navigate("/login"); // 👈 redirige al login
+  };
+
   return (
     <Navbar
       bg="white"
@@ -128,7 +137,7 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, userName, onLogout }) => {
             <Dropdown.Item>Perfil</Dropdown.Item>
             <Dropdown.Item>Configuración</Dropdown.Item>
             <Dropdown.Divider />
-            <Dropdown.Item onClick={onLogout}>Cerrar sesión</Dropdown.Item>
+            <Dropdown.Item onClick={handleLogoutClick}>Cerrar sesión</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </Nav>

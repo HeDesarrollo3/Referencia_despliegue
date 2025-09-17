@@ -53,7 +53,7 @@ function App() {
       value={{ isAuthenticated, handleLogin, handleLogout, userName }}
     >
       <BrowserRouter>
-        <AppRoutes /> {/* ✅ Ahora las rutas tienen Router */}
+        <AppRoutes /> 
       </BrowserRouter>
     </AuthContext.Provider>
   );

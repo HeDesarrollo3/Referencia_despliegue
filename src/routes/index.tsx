@@ -1,5 +1,5 @@
 // src/routes/index.tsx
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import DashboardPage from "../pages/Dashboard/Dashboard";
 import PreregistroPage from "../pages/PreRegistro/Preregistro";
@@ -13,6 +13,7 @@ import RegistroUsuarios from "../pages/RegistroUsuarios/RegistroUsuarios";
 function AppRoutes() {
   return (
     <Routes>
+       <Route path="/" element={<Navigate to="/login" />} />
  <Route path="/login" element={<Login />} />
   <Route path="/RegistroUsuarios" element={<RegistroUsuarios />} />
 
