@@ -145,11 +145,12 @@ const Sidebar: React.FC = () => {
 
   const links = [
     { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
-    { to: "/preregistro", label: "Preregistro", icon: <FiClipboard /> },
+    { to: "/PreRegistroWizard", label: "PreOrden", icon: <FiClipboard /> },
     { to: "/resultados", label: "Resultados", icon: <FiSearch /> },
     { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
-    { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
     { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
+    { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
+    
   ];
 
   return (
@@ -163,7 +164,10 @@ const Sidebar: React.FC = () => {
         padding: "1rem",
       }}
     >
-      <h3 className="text-center mb-4 fw-bold">HE</h3>
+      {/* <h3 className="text-center mb-4 fw-bold">HE</h3> */}
+      <div className="text-center mb-4">
+  <img src="/logo1.png" alt="Logo HE" style={{ maxWidth: "50px" }} className="img-fluid" />
+</div>
       <Nav className="flex-column mb-auto">
         {links.map((link) => (
           <Nav.Item key={link.to}>

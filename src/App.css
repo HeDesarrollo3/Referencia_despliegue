@@ -90,3 +90,8 @@ main {
 .text-nowrap {
   white-space: nowrap;
 }
+
+.react-select__control {
+  border-radius: 10px;
+  min-height: 38px;
+}

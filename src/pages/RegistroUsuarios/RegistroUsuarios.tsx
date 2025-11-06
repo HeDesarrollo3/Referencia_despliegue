@@ -3,10 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 
-const CUSTOMERS_URL =
-  "http://192.168.11.14:3000/api/v1/higuera-escalante/customers";
-const REGISTER_URL =
-  "http://192.168.11.14:3000/api/v1/higuera-escalante/users/register";
+const CUSTOMERS_URL = "http://192.168.11.14:3000/api/v1/higuera-escalante/customers";
+const REGISTER_URL = "http://192.168.11.14:3000/api/v1/higuera-escalante/users/register";
 
 const RegisterUserPage = () => {
   const navigate = useNavigate();
@@ -16,68 +14,45 @@ const RegisterUserPage = () => {
     nombres: "",
     lastName: "",
     surName: "",
-    cargo: "", // se usará como specialty
+    cargo: "",
     genero: "",
     telefono: "",
     email: "",
     empresa: "",
     NIT: "",
     direccion: "",
-    departamento: "",
-    ciudad: "",
   });
 
   const [empresas, setEmpresas] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Cargar empresas desde el API (POST)
   useEffect(() => {
     const fetchEmpresas = async () => {
       try {
         const token = localStorage.getItem("token") || "";
-        const response = await axios.post(
-          CUSTOMERS_URL,
-          {},
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
-
+        const response = await axios.post(CUSTOMERS_URL, {}, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = response.data;
-        if (Array.isArray(data.customers)) {
-          setEmpresas(data.customers);
-        } else if (Array.isArray(data)) {
-          setEmpresas(data);
-        } else {
-          setEmpresas([]);
-        }
-      } catch (error) {
-        console.error("Error fetching empresas:", error);
+        setEmpresas(Array.isArray(data.customers) ? data.customers : Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
         setEmpresas([]);
       }
     };
-
     fetchEmpresas();
   }, []);
 
-  // Manejo de cambios
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
     if (name === "empresa") {
-      const empresaSeleccionada = empresas.find(
-        (emp) => emp.customerId === value
-      );
+      const empresaSeleccionada = empresas.find(emp => emp.customerId === value);
       setFormData({
         ...formData,
         empresa: value,
-        NIT: empresaSeleccionada ? empresaSeleccionada.identification : "",
-        direccion: empresaSeleccionada
-          ? empresaSeleccionada.commercialAddress
-          : "",
+        NIT: empresaSeleccionada?.identification || "",
+        direccion: empresaSeleccionada?.commercialAddress || "",
       });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -103,15 +78,12 @@ const RegisterUserPage = () => {
 
     try {
       const token = localStorage.getItem("token") || "";
-      const response = await axios.post(REGISTER_URL, payload, {
+      await axios.post(REGISTER_URL, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-
-      console.log("Usuario registrado:", response.data);
       alert("Usuario registrado correctamente 🚀");
-      navigate("/"); // Redirigir a login
-    } catch (err: any) {
-      console.error("Error registrando usuario:", err);
+      navigate("/");
+    } catch {
       setError("Error al registrar usuario. Revisa los datos.");
     } finally {
       setLoading(false);
@@ -120,26 +92,20 @@ const RegisterUserPage = () => {
 
   return (
     <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div
-        className="card shadow p-4 rounded w-100"
-        style={{ maxWidth: "900px" }}
-      >
-        <img
-          src="/logo192.png"
-          alt="Logo HE"
-          className="mb-4 mx-auto d-block img-fluid"
-          style={{ maxWidth: "120px" }}
-        />
-        <div className="card-body">
-          <h3 className="card-title text-center mb-4 text-danger">
+      <div className="card shadow-sm rounded-3 w-100" style={{ maxWidth: "900px" }}>
+        <div className="text-center my-3">
+          <img src="/logo1.png" alt="Logo HE" style={{ maxWidth: "120px" }} className="img-fluid" />
+        </div>
+
+        <div className="card-body p-4">
+          <h3 className="text-center mb-4 text-danger">
             <i className="bi bi-person-plus-fill me-2"></i> Registro de Usuario
           </h3>
 
           {error && <div className="alert alert-danger">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            {/* Tipo de Documento y Documento */}
-            <div className="row mb-3">
+            <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label">Tipo de Documento *</label>
                 <select
@@ -169,65 +135,29 @@ const RegisterUserPage = () => {
               </div>
             </div>
 
-            {/* Nombres y Apellidos */}
-            <div className="row mb-3">
+            <div className="row g-3 mb-3">
               <div className="col-md-4">
                 <label className="form-label">Nombres *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="nombres"
-                  value={formData.nombres}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="text" name="nombres" value={formData.nombres} onChange={handleChange} className="form-control" required />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Apellido *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="form-control" required />
               </div>
               <div className="col-md-4">
                 <label className="form-label">Segundo Apellido *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="surName"
-                  value={formData.surName}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="text" name="surName" value={formData.surName} onChange={handleChange} className="form-control" required />
               </div>
             </div>
 
-            {/* Cargo y Género */}
-            <div className="row mb-3">
+            <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label">Cargo / Especialidad *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="cargo"
-                  value={formData.cargo}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="text" name="cargo" value={formData.cargo} onChange={handleChange} className="form-control" required />
               </div>
               <div className="col-md-6">
                 <label className="form-label">Género *</label>
-                <select
-                  name="genero"
-                  value={formData.genero}
-                  onChange={handleChange}
-                  className="form-select"
-                  required
-                >
+                <select name="genero" value={formData.genero} onChange={handleChange} className="form-select" required>
                   <option value="">Seleccione...</option>
                   <option value="M">Masculino</option>
                   <option value="F">Femenino</option>
@@ -235,118 +165,43 @@ const RegisterUserPage = () => {
               </div>
             </div>
 
-            {/* Email */}
             <div className="mb-3">
               <label className="form-label">Email *</label>
-              <input
-                type="email"
-                className="form-control"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-control" required />
             </div>
 
-            {/* Empresa y NIT */}
-            {/* <div className="row mb-3">
-              <div className="col-md-8">
-                <label className="form-label">Empresa *</label>
-                <select
-                  name="empresa"
-                  value={formData.empresa}
-                  onChange={handleChange}
-                  className="form-select"
-                  required
-                >
-                  <option value="">Seleccione una empresa</option>
-                  {empresas.map((empresa) => (
-                    <option key={empresa.customerId} value={empresa.customerId}>
-                      {empresa.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-4">
-                <label className="form-label">NIT</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="NIT"
-                  value={formData.NIT}
-                  readOnly
-                />
-              </div>
-            </div> */}
-            <div className="row mb-3">
+            <div className="row g-3 mb-3">
               <div className="col-md-8">
                 <label className="form-label">Empresa *</label>
                 <Select
-                  options={empresas.map((empresa) => ({
-                    value: empresa.customerId,
-                    label: empresa.name,
-                  }))}
-                  value={
-                    formData.empresa
-                      ? {
-                          value: formData.empresa,
-                          label: empresas.find(
-                            (e) => e.customerId === formData.empresa
-                          )?.name,
-                        }
-                      : null
-                  }
+                  options={empresas.map(e => ({ value: e.customerId, label: e.name }))}
+                  value={formData.empresa ? { value: formData.empresa, label: empresas.find(e => e.customerId === formData.empresa)?.name } : null}
                   onChange={(selected) => {
                     const value = selected?.value || "";
-                    const empresaSeleccionada = empresas.find(
-                      (emp) => emp.customerId === value
-                    );
-                    setFormData((prev) => ({
+                    const empresaSeleccionada = empresas.find(emp => emp.customerId === value);
+                    setFormData(prev => ({
                       ...prev,
                       empresa: value,
-                      NIT: empresaSeleccionada
-                        ? empresaSeleccionada.identification
-                        : "",
-                      direccion: empresaSeleccionada
-                        ? empresaSeleccionada.commercialAddress
-                        : "",
+                      NIT: empresaSeleccionada?.identification || "",
+                      direccion: empresaSeleccionada?.commercialAddress || "",
                     }));
                   }}
                   placeholder="Seleccione una empresa..."
                   isClearable
                 />
               </div>
-
               <div className="col-md-4">
                 <label className="form-label">NIT</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="NIT"
-                  value={formData.NIT}
-                  readOnly
-                />
+                <input type="text" name="NIT" value={formData.NIT} readOnly className="form-control" />
               </div>
             </div>
 
-            {/* Dirección */}
             <div className="mb-3">
               <label className="form-label">Dirección</label>
-              <input
-                type="text"
-                className="form-control"
-                name="direccion"
-                value={formData.direccion}
-                readOnly
-              />
+              <input type="text" name="direccion" value={formData.direccion} readOnly className="form-control" />
             </div>
 
-            {/* Botón */}
-            <button
-              type="submit"
-              className="btn btn-danger w-100"
-              disabled={loading}
-            >
+            <button type="submit" className="btn btn-danger w-100 py-2" disabled={loading}>
               {loading ? "Registrando..." : "Registrar Usuario"}
             </button>
           </form>

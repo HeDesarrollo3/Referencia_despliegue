@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
     {
       title: "Pre Registro",
       text: "Registra pacientes de forma anticipada.",
-      route: "/preregistro",
+      route: "/PreRegistroWizard",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
     },
      {

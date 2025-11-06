@@ -1,147 +1,151 @@
-// import React from "react";
-// import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
-// import { FiLogOut, FiBell, FiUser } from "react-icons/fi";
-
-// interface GetInitialsFn {
-//   (name: string): string;
-// }
-
-// const getInitials: GetInitialsFn = (name) => {
-//   if (!name || typeof name !== "string") {
-//     return "HE";
-//   }
-//   return name
-//     .split(" ")
-//     .map((word) => word.charAt(0))
-//     .join("")
-//     .toUpperCase();
-// };
-
-// interface TopbarProps {
-//   pageTitle: string;
-//   onLogout: () => void;
-//   userName: string;
-// }
-
-// const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout, userName }) => {
-//   const userInitials = getInitials(userName);
-
-//   return (
-//     <Navbar bg="white" expand="lg" className="shadow-sm py-3 sticky-top">
-//       {" "}
-//       <Container fluid>
-//         {/* Título de la página */}{" "}
-//         <Navbar.Brand href="#" className="fw-bold fs-5 text-gray-800">
-//           {pageTitle}
-//         </Navbar.Brand>
-//         {/* Íconos y perfil de usuario */}{" "}
-//         <Nav className="ms-auto d-flex align-items-center">
-//           {/* Icono de notificación */}{" "}
-//           <Nav.Item>
-//             {" "}
-//             <a href="#" className="nav-link p-2 bg-light rounded-circle me-2">
-//               <FiBell className="text-gray-600 fs-5" />{" "}
-//             </a>{" "}
-//           </Nav.Item>
-//           {/* Perfil de usuario */}{" "}
-//           <Nav.Item>
-//             {" "}
-//             <NavDropdown
-//               title={
-//                 <div className="d-flex align-items-center">
-//                   {" "}
-//                   <div
-//                     className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-2"
-//                     style={{ width: "32px", height: "32px", fontSize: "1rem" }}
-//                   >
-//                     {userInitials}{" "}
-//                   </div>{" "}
-//                   <span className="d-none d-sm-block text-dark fw-medium">
-//                     {userName}
-//                   </span>{" "}
-//                 </div>
-//               }
-//               id="user-dropdown"
-//             >
-//               {" "}
-//               <NavDropdown.Item onClick={onLogout}>
-//                 <FiLogOut className="text-danger me-2" />
-//                 Cerrar sesión{" "}
-//               </NavDropdown.Item>{" "}
-//             </NavDropdown>{" "}
-//           </Nav.Item>{" "}
-//         </Nav>{" "}
-//       </Container>{" "}
-//     </Navbar>
-//   );
-// };
-
-// export default Topbar;
-
-
-// src/components/layout/Topbar.tsx
-import React from "react";
-import { Navbar, Nav, Badge, Dropdown } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
 import { FiBell, FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 interface TopbarProps {
   pageTitle: string;
-  userName: string;
   onLogout: () => void;
 }
 
-const Topbar: React.FC<TopbarProps> = ({ pageTitle, userName, onLogout }) => {
+const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+  const [userName, setUserName] = useState("Usuario");
+  const [showModal, setShowModal] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
+    // 🔹 Verificar expiración del token JWT
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        if (payload.exp && payload.exp < currentTime) {
+          // 🔴 Token expirado → cerrar sesión
+          alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+          handleLogoutClick();
+          return;
+        }
+
+        // ✅ Mostrar nombre de usuario
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          const fullName = `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim();
+          setUserName(fullName || "Usuario");
+        } else {
+          setUserName(payload.ident || "Usuario");
+        }
+      } catch (error) {
+        console.error("Error al procesar el token:", error);
+        handleLogoutClick();
+      }
+    } else {
+      // 🔴 No hay token → redirigir a login
+      handleLogoutClick();
+    }
+
+    // 🔔 Cargar notificaciones simuladas
+    const fetchNotifications = async () => {
+      try {
+        const fakeData = [
+          { id: 1, message: "🧪 Resultado disponible: Hemograma", date: "2025-10-21 09:00" },
+          { id: 2, message: "📅 Cita programada para mañana", date: "2025-10-22 08:30" },
+          { id: 3, message: "⚠️ Recuerda actualizar tu correo electrónico", date: "2025-10-20 16:45" },
+        ];
+        setNotifications(fakeData);
+      } catch (err) {
+        console.error("Error al obtener notificaciones:", err);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  // 🔹 Cerrar sesión (también usado cuando expira el token)
   const handleLogoutClick = () => {
-    onLogout(); // borra token y estado
-    navigate("/login"); // 👈 redirige al login
+    onLogout();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
+  const handleProfileClick = () => navigate("/profile");
+  const handleSettingsClick = () => navigate("/settings");
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
   return (
-    <Navbar
-      bg="white"
-      expand="lg"
-      className="shadow-sm px-4"
-      style={{ height: "60px" }}
-    >
-      {/* Título de la página */}
-      <Navbar.Brand className="fw-bold text-primary">
-        {pageTitle}
-      </Navbar.Brand>
+    <>
+      <Navbar
+        bg="white"
+        expand="lg"
+        className="shadow-sm px-4 d-flex justify-content-between align-items-center"
+        style={{ height: "60px" }}
+      >
+        <Navbar.Brand className="fw-bold text-primary fs-5">{pageTitle}</Navbar.Brand>
 
-      {/* Acciones a la derecha */}
-      <Nav className="ms-auto d-flex align-items-center">
-        {/* Notificaciones */}
-        <Nav.Link className="position-relative me-3">
-          <FiBell size={20} />
-          <Badge
-            bg="danger"
-            pill
-            className="position-absolute top-0 start-100 translate-middle"
-          >
-            3
-          </Badge>
-        </Nav.Link>
+        <Nav className="d-flex align-items-center">
+          <Nav.Link className="position-relative me-3" onClick={handleOpenModal}>
+            <FiBell size={20} />
+            {notifications.length > 0 && (
+              <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
+                {notifications.length}
+              </Badge>
+            )}
+          </Nav.Link>
 
-        {/* Menú de usuario */}
-        <Dropdown align="end">
-          <Dropdown.Toggle variant="light" id="dropdown-basic" className="d-flex align-items-center">
-            <FiUser size={20} className="me-1" />
-            <span className="fw-semibold">{userName}</span>
-          </Dropdown.Toggle>
+          <Dropdown align="end">
+            <Dropdown.Toggle
+              variant="light"
+              id="dropdown-basic"
+              className="d-flex align-items-center border-0 bg-transparent"
+            >
+              <FiUser size={20} className="me-2 text-danger" />
+              <span className="fw-semibold">{userName}</span>
+            </Dropdown.Toggle>
 
-          <Dropdown.Menu>
-            <Dropdown.Item>Perfil</Dropdown.Item>
-            <Dropdown.Item>Configuración</Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item onClick={handleLogoutClick}>Cerrar sesión</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </Nav>
-    </Navbar>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={handleProfileClick}>👤 Perfil</Dropdown.Item>
+              <Dropdown.Item onClick={handleSettingsClick}>⚙️ Configuración</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={handleLogoutClick}>🚪 Cerrar sesión</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </Nav>
+      </Navbar>
+
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton className="bg-light">
+          <Modal.Title>🔔 Notificaciones</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {notifications.length === 0 ? (
+            <p className="text-center text-muted mb-0">No tienes notificaciones nuevas</p>
+          ) : (
+            <ListGroup variant="flush">
+              {notifications.map((n) => (
+                <ListGroup.Item key={n.id}>
+                  <div className="fw-semibold">{n.message}</div>
+                  <small className="text-muted">{n.date}</small>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" size="sm" onClick={handleCloseModal}>
+            Cerrar
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
+            Ver todas
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

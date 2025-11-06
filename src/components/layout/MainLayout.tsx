@@ -1,4 +1,3 @@
-// src/components/layout/MainLayout.tsx
 import React from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
@@ -8,35 +7,39 @@ import Footer from "./Footer";
 interface MainLayoutProps {
   children?: React.ReactNode;
   pageTitle?: string;
-  userName?: string;
   onLogout?: () => void;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   pageTitle = "",
-  userName = "Usuario",
   onLogout,
 }) => {
   return (
-    <div className="d-flex flex-column min-vh-100">
+    <div className="d-flex flex-column min-vh-100 bg-light">
       {/* Sidebar fijo */}
       <Sidebar />
 
-      {/* Contenido derecho con margen */}
+      {/* Contenido derecho */}
       <div
         className="flex-grow-1 d-flex flex-column"
-        style={{ marginLeft: "250px" }}
+        style={{
+          marginLeft: "250px",
+          transition: "margin-left 0.3s ease",
+          backgroundColor: "#fff",
+        }}
       >
         {/* Topbar */}
-        <Topbar
-          pageTitle={pageTitle}
-          userName={userName}
-          onLogout={onLogout || (() => {})}
-        />
+        <Topbar pageTitle={pageTitle} onLogout={onLogout || (() => {})} />
 
-        {/* Contenido dinámico */}
-        <main className="flex-grow-1 p-4 bg-light">
+        {/* Contenido principal */}
+        <main
+          className="flex-grow-1 p-4"
+          style={{
+            backgroundColor: "#f8f9fa",
+            minHeight: "calc(100vh - 120px)",
+          }}
+        >
           {children || <Outlet />}
         </main>
 
