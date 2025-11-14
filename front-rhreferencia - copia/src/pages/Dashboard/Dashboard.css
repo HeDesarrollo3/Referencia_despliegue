@@ -1,0 +1,21 @@
+.sidebar {
+    width: 240px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+  }
+  
+  .sidebar-link {
+    padding: 10px 15px;
+    border-radius: 0.375rem;
+    transition: background 0.2s;
+  }
+  
+  .sidebar-link:hover,
+  .sidebar-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+  }
+  

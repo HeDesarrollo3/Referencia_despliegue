@@ -1,0 +1,254 @@
+// import React, { useEffect, useState } from "react";
+// import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
+// import { FiBell, FiUser } from "react-icons/fi";
+// import { useNavigate } from "react-router-dom";
+
+// interface TopbarProps {
+//   pageTitle: string;
+//   onLogout: () => void;
+// }
+
+// const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+//   const [userName, setUserName] = useState("Usuario");
+//   const [showModal, setShowModal] = useState(false);
+//   const [notifications, setNotifications] = useState<any[]>([]);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const token = localStorage.getItem("token");
+
+//     // 🔹 Verificar expiración del token JWT
+//     if (token) {
+//       try {
+//         const payload = JSON.parse(atob(token.split(".")[1]));
+//         const currentTime = Math.floor(Date.now() / 1000);
+
+//         if (payload.exp && payload.exp < currentTime) {
+//           // 🔴 Token expirado → cerrar sesión
+//           alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+//           handleLogoutClick();
+//           return;
+//         }
+
+//         // ✅ Mostrar nombre de usuario
+//         const storedUser = localStorage.getItem("user");
+//         if (storedUser) {
+//           const userData = JSON.parse(storedUser);
+//           const fullName = `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim();
+//           setUserName(fullName || "Usuario");
+//         } else {
+//           setUserName(payload.ident || "Usuario");
+//         }
+//       } catch (error) {
+//         console.error("Error al procesar el token:", error);
+//         handleLogoutClick();
+//       }
+//     } else {
+//       // 🔴 No hay token → redirigir a login
+//       handleLogoutClick();
+//     }
+
+//     // 🔔 Cargar notificaciones simuladas
+//     const fetchNotifications = async () => {
+//       try {
+//         const fakeData = [
+//           { id: 1, message: "🧪 Resultado disponible: Hemograma", date: "2025-10-21 09:00" },
+//           { id: 2, message: "📅 Cita programada para mañana", date: "2025-10-22 08:30" },
+//           { id: 3, message: "⚠️ Recuerda actualizar tu correo electrónico", date: "2025-10-20 16:45" },
+//         ];
+//         setNotifications(fakeData);
+//       } catch (err) {
+//         console.error("Error al obtener notificaciones:", err);
+//       }
+//     };
+
+//     fetchNotifications();
+//   }, []);
+
+//   // 🔹 Cerrar sesión (también usado cuando expira el token)
+//   const handleLogoutClick = () => {
+//     onLogout();
+//     localStorage.removeItem("token");
+//     localStorage.removeItem("user");
+//     navigate("/login");
+//   };
+
+//   const handleProfileClick = () => navigate("/profile");
+//   const handleSettingsClick = () => navigate("/settings");
+//   const handleOpenModal = () => setShowModal(true);
+//   const handleCloseModal = () => setShowModal(false);
+
+//   return (
+//     <>
+//       <Navbar
+//         bg="white"
+//         expand="lg"
+//         className="shadow-sm px-4 d-flex justify-content-between align-items-center"
+//         style={{ height: "60px" }}
+//       >
+//         <Navbar.Brand className="fw-bold text-primary fs-5">{pageTitle}</Navbar.Brand>
+
+//         <Nav className="d-flex align-items-center">
+//           <Nav.Link className="position-relative me-3" onClick={handleOpenModal}>
+//             <FiBell size={20} />
+//             {notifications.length > 0 && (
+//               <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
+//                 {notifications.length}
+//               </Badge>
+//             )}
+//           </Nav.Link>
+
+//           <Dropdown align="end">
+//             <Dropdown.Toggle
+//               variant="light"
+//               id="dropdown-basic"
+//               className="d-flex align-items-center border-0 bg-transparent"
+//             >
+//               <FiUser size={20} className="me-2 text-danger" />
+//               <span className="fw-semibold">{userName}</span>
+//             </Dropdown.Toggle>
+
+//             <Dropdown.Menu>
+//               <Dropdown.Item onClick={handleProfileClick}>👤 Perfil</Dropdown.Item>
+//               <Dropdown.Item onClick={handleSettingsClick}>⚙️ Configuración</Dropdown.Item>
+//               <Dropdown.Divider />
+//               <Dropdown.Item onClick={handleLogoutClick}>🚪 Cerrar sesión</Dropdown.Item>
+//             </Dropdown.Menu>
+//           </Dropdown>
+//         </Nav>
+//       </Navbar>
+
+//       <Modal show={showModal} onHide={handleCloseModal} centered>
+//         <Modal.Header closeButton className="bg-light">
+//           <Modal.Title>🔔 Notificaciones</Modal.Title>
+//         </Modal.Header>
+//         <Modal.Body>
+//           {notifications.length === 0 ? (
+//             <p className="text-center text-muted mb-0">No tienes notificaciones nuevas</p>
+//           ) : (
+//             <ListGroup variant="flush">
+//               {notifications.map((n) => (
+//                 <ListGroup.Item key={n.id}>
+//                   <div className="fw-semibold">{n.message}</div>
+//                   <small className="text-muted">{n.date}</small>
+//                 </ListGroup.Item>
+//               ))}
+//             </ListGroup>
+//           )}
+//         </Modal.Body>
+//         <Modal.Footer>
+//           <Button variant="outline-secondary" size="sm" onClick={handleCloseModal}>
+//             Cerrar
+//           </Button>
+//           <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
+//             Ver todas
+//           </Button>
+//         </Modal.Footer>
+//       </Modal>
+//     </>
+//   );
+// };
+
+// export default Topbar;
+
+
+//7/11// src/pages/Dashboard/Dashboard.tsx
+import React, { useEffect, useState } from "react";
+import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
+import { FiBell, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import "./Topbar.css";
+
+interface TopbarProps {
+  pageTitle: string;
+  onLogout: () => void;
+}
+
+const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+  const [userName, setUserName] = useState("Usuario");
+  const [showModal, setShowModal] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      setUserName(`${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim());
+    }
+
+    // Ejemplo de notificaciones
+    setNotifications([
+      { id: 1, message: "🧪 Resultado Hemograma disponible", date: "2025-11-06 09:30" },
+      { id: 2, message: "📅 Cita confirmada para mañana", date: "2025-11-07 08:00" },
+    ]);
+  }, []);
+
+  const handleLogout = () => {
+    onLogout();
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  return (
+    <>
+      <Navbar bg="white" expand="lg" className="shadow-sm px-4 topbar">
+        {/* <Navbar.Brand className="fw-bold text-primary fs-5">{pageTitle}</Navbar.Brand> */}
+        <Nav className="ms-auto d-flex align-items-center">
+          <Nav.Link className="position-relative me-3" onClick={() => setShowModal(true)}>
+            <FiBell size={20} />
+            {notifications.length > 0 && (
+              <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
+                {notifications.length}
+              </Badge>
+            )}
+          </Nav.Link>
+
+          <Dropdown align="end">
+            <Dropdown.Toggle variant="light" className="d-flex align-items-center border-0 bg-transparent">
+              <FiUser size={20} className="me-2 text-primary" />
+              
+              <span className="fw-semibold text-dark"> {userName}</span>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => navigate("/profile")}>👤 Perfil</Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/settings")}>⚙️ Configuración</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={handleLogout}>🚪 Cerrar sesión</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </Nav>
+      </Navbar>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton className="bg-light">
+          <Modal.Title>🔔 Notificaciones</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {notifications.length === 0 ? (
+            <p className="text-center text-muted">No tienes notificaciones</p>
+          ) : (
+            <ListGroup variant="flush">
+              {notifications.map((n) => (
+                <ListGroup.Item key={n.id}>
+                  <div className="fw-semibold">{n.message}</div>
+                  <small className="text-muted">{n.date}</small>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
+            Ver todas
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
+
+export default Topbar;

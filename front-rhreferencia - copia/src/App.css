@@ -1,0 +1,111 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sidebar */
+.nav-link {
+  transition: all 0.2s ease-in-out;
+}
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 1.5rem;
+}
+.nav-link.active {
+  background-color: #f8f9fa !important;
+  color: #0d6efd !important;
+  border-left: 4px solid #0d6efd;
+  font-weight: 600;
+}
+
+/* Dashboard Cards */
+.card-hover {
+  transition: all 0.3s ease-in-out;
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar Links */
+.nav-link {
+  transition: all 0.2s ease-in-out;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.nav-link.active {
+  background-color: #f8f9fa !important;
+  color: #0d6efd !important;
+  font-weight: 600;
+}
+
+/* Topbar */
+.navbar-brand {
+  font-size: 1.25rem;
+}
+
+/* Dashboard background */
+main {
+  background-color: #f5f6f8;
+}
+
+/* Puedes agregar esto a un archivo CSS global o a un módulo CSS */
+.text-nowrap {
+  white-space: nowrap;
+}
+
+.react-select__control {
+  border-radius: 10px;
+  min-height: 38px;
+}
+
+/* Asegura que el contenido principal no quede oculto bajo el sidebar */
+.main-content {
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 60px; /* deja espacio si el sidebar se hace barra superior */
+  }
+}
+
