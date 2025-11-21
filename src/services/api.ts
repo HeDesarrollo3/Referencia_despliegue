@@ -171,6 +171,63 @@ export const registerOrder = async (token: string, formData: any) => {
 
 
 
+// export const getPreRegistros = async (token: string) => {
+//   try {
+//     const res = await axios.post(
+//       `${API_URL}/orders/by-term/`,
+//       {},
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+
+//     const pacientes = res.data;
+//     console.log("📌 Pre-registros desde API:", pacientes);
+
+//     // ✅ Transformamos para que cada preregistro tenga patientName, orderNumber y orderCreationDate
+//     const registros = pacientes.flatMap((p: any) =>
+//       (p.orders || []).map((o: any) => ({
+//         patientId: p.patientId,
+//         identification: p.identification,
+//         identificationType: p.identificationType,
+//         patientName: `${p.firstName ?? ""} ${p.middleName ?? ""} ${p.lastName ?? ""} ${p.surName ?? ""}`.trim(),
+//         gender: p.gender,
+//         birthDate: p.birthDate,
+//         mobileNumber: p.mobileNumber,
+//         email: p.email,
+//         state: o.state,
+
+//         // 👇 lo que quieres mostrar
+//         orderId: o.orderId,
+//         orderNumber: o.orderNumber,
+//         orderCreationDate: o.creationDate,
+//         orderState: o.state,
+//         orderObservation: o.observation,
+//         orderCie10: o.cie10,
+//         orderPriority: o.priority,
+//         customerAccountId: o.customerAccountId,
+//         tariffId: o.tariffId,
+//         products: o.products || [],
+
+//         customerAccountName: o.customerAccount?.name || "",
+//         customerId: o.customer?.customerId || "",
+//         customerName: o.customer?.name || "",
+//         tariffName: o.tariff?.name || "",
+//       }))
+//     );
+
+//     console.log("✅ Registros transformados:", registros);
+
+//     return registros;
+    
+//   } catch (err: any) {
+//     console.error("❌ Error al obtener pre-registros:", err.response?.data || err.message);
+//     throw err;
+//   }
+// };
+
 export const getPreRegistros = async (token: string) => {
   try {
     const res = await axios.post(
@@ -183,10 +240,14 @@ export const getPreRegistros = async (token: string) => {
       }
     );
 
-    const pacientes = res.data;
-    console.log("📌 Pre-registros desde API:", pacientes);
+    console.log("📌 RAW respuesta:", res.data);
 
-    // ✅ Transformamos para que cada preregistro tenga patientName, orderNumber y orderCreationDate
+    // ✅ Ahora sabemos que el array está en res.data.data
+    const pacientes = Array.isArray(res.data.data) ? res.data.data : [];
+
+    console.log("📌 Pacientes detectados:", pacientes);
+
+    // Transformamos los pre-registros
     const registros = pacientes.flatMap((p: any) =>
       (p.orders || []).map((o: any) => ({
         patientId: p.patientId,
@@ -199,7 +260,7 @@ export const getPreRegistros = async (token: string) => {
         email: p.email,
         state: o.state,
 
-        // 👇 lo que quieres mostrar
+        // Datos de orden
         orderId: o.orderId,
         orderNumber: o.orderNumber,
         orderCreationDate: o.creationDate,
@@ -211,6 +272,7 @@ export const getPreRegistros = async (token: string) => {
         tariffId: o.tariffId,
         products: o.products || [],
 
+        // Datos de customer
         customerAccountName: o.customerAccount?.name || "",
         customerId: o.customer?.customerId || "",
         customerName: o.customer?.name || "",
@@ -221,16 +283,12 @@ export const getPreRegistros = async (token: string) => {
     console.log("✅ Registros transformados:", registros);
 
     return registros;
-    
+
   } catch (err: any) {
     console.error("❌ Error al obtener pre-registros:", err.response?.data || err.message);
     throw err;
   }
 };
-
-
-
-
 
 
 
@@ -288,4 +346,28 @@ export const changeUserPassword = async (token: string, data: any) => {
     console.error("❌ Error al cambiar la contraseña:", err.response?.data || err.message);
     throw err;
   }
+};
+
+
+export const changePassword = async (token: string, body: any) => {
+  const response = await fetch(
+    "http://localhost:3000/api/v1/higuera-escalante/users/change-password",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    throw new Error("GENERAL_ERROR");
+  }
+
+  return response.json();
 };

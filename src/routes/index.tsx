@@ -2,7 +2,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import DashboardPage from "../pages/Dashboard/Dashboard";
-// import Preregistro from "../pages/PreRegistro/Preregistro";
 import PreRegistroWizard from "../pages/PreRegistro/PreRegistroWizard";
 import ResultadosPage from "../pages/Resultados/Resultados";
 import GestorNovedadesPage from "../pages/GestorDeNovedades/GestorDeNovedades";
@@ -14,71 +13,104 @@ import ProfilePage from "../pages/Profile/ProfilePage";
 import UserSettingsPage from "../pages/UserSettings/UserSettingsPage";
 import RecuperarPassword from "../pages/RecuperarPassword/RecuperarPassword";
 import NotificationsPage from "../pages/Notificaciones/Notificaciones";
+import AdminPage from "../pages/Admin/Admin";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
   return (
     <Routes>
-       <Route path="/" element={<Navigate to="/login" />} />
- <Route path="/login" element={<Login />} />
-  <Route path="/RegistroUsuarios" element={<RegistroUsuarios />} />
-  <Route path="/recuperar-password" element={<RecuperarPassword />} />
 
-  <Route path="/notificaciones" element={<NotificationsPage />} />
+      {/* Redirección inicial */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
+      {/* Rutas públicas */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/RegistroUsuarios" element={<RegistroUsuarios />} />
+      <Route path="/recuperar-password" element={<RecuperarPassword />} />
+      <Route path="/notificaciones" element={<NotificationsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/settings" element={<UserSettingsPage />} />
 
-
-
-  <Route path="/profile" element={<ProfilePage />} />
-<Route path="/settings" element={<UserSettingsPage />} />
-
+      {/* Rutas protegidas (requiere login) */}
       <Route
         path="/dashboard"
         element={
-          <MainLayout pageTitle="Inicio"  onLogout={() => console.log("Logout")}>
-            <DashboardPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="Inicio" onLogout={() => console.log("Logout")}>
+              <DashboardPage />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/PreRegistroWizard"
         element={
-         <MainLayout pageTitle="PreOrden" onLogout={() => console.log("Logout")}>
-  <PreRegistroWizard />
-</MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="PreOrden" onLogout={() => console.log("Logout")}>
+              <PreRegistroWizard />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/resultados"
         element={
-          <MainLayout pageTitle="Resultados"  onLogout={() => console.log("Logout")}>
-            <ResultadosPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="Resultados" onLogout={() => console.log("Logout")}>
+              <ResultadosPage />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/GestorDeNovedades"
         element={
-          <MainLayout pageTitle="Novedades"  onLogout={() => console.log("Logout")}>
-            <GestorNovedadesPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="Novedades" onLogout={() => console.log("Logout")}>
+              <GestorNovedadesPage />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/portafolio"
         element={
-          <MainLayout pageTitle="Portafolio"  onLogout={() => console.log("Logout")}>
-            <PortafolioPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="Portafolio" onLogout={() => console.log("Logout")}>
+              <PortafolioPage />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/tarifaria"
         element={
-          <MainLayout pageTitle="Tarifaria"  onLogout={() => console.log("Logout")}>
-            <TarifariaPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout pageTitle="Tarifaria" onLogout={() => console.log("Logout")}>
+              <TarifariaPage />
+            </MainLayout>
+          </ProtectedRoute>
         }
       />
+
+      {/* SOLO ADMIN */}
+      <Route
+  path="/admin"
+  element={
+    <ProtectedRoute role="ADMINISTRADOR">
+      <MainLayout pageTitle="Administración" onLogout={() => console.log("Logout")}>
+        <AdminPage />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+
+
     </Routes>
   );
 }

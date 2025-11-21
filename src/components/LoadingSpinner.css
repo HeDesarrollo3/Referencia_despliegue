@@ -1,0 +1,94 @@
+.blood-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  position: relative;
+}
+
+.blood-drops {
+  position: relative;
+  height: 100px;
+}
+
+.drop {
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 18px;
+  background: #b30000;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: fall 1.8s infinite ease-in;
+}
+
+.drop1 {
+  left: -20px;
+  animation-delay: 0s;
+}
+
+.drop2 {
+  left: 0;
+  animation-delay: 0.4s;
+}
+
+.drop3 {
+  left: 20px;
+  animation-delay: 0.8s;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(70px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(90px);
+    opacity: 0;
+  }
+}
+
+.syringe {
+  position: relative;
+  width: 60px;
+  height: 20px;
+  margin-top: 20px;
+  background: #ccc;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.barrel {
+  position: absolute;
+  width: 60px;
+  height: 12px;
+  background: white;
+  border: 2px solid #999;
+  border-radius: 4px;
+}
+
+.needle {
+  position: absolute;
+  right: -15px;
+  width: 15px;
+  height: 2px;
+  background: #888;
+}
+
+.loading-text {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #800000;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

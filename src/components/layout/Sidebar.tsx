@@ -127,59 +127,189 @@
 // };
 
 // export default Sidebar;
+// // src/components/layout/Sidebar.tsx
+// import React from "react";
+// import { Nav } from "react-bootstrap";
+// import { Link, useLocation } from "react-router-dom";
+// import {
+//   FiHome,
+//   FiSearch,
+//   FiAlertCircle,
+//   FiFileText,
+//   FiClipboard,
+//   FiDollarSign,
+// } from "react-icons/fi";
+
+// const Sidebar: React.FC = () => {
+//   const location = useLocation();
+
+//   const links = [
+//     { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
+//     { to: "/PreRegistroWizard", label: "PreOrden", icon: <FiClipboard /> },
+//     { to: "/resultados", label: "Resultados", icon: <FiSearch /> },
+//     { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
+//     { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
+//     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
+    
+//   ];
+
+//   return (
+//     <div
+//       className="d-flex flex-column text-white position-fixed vh-100"
+//       style={{
+//         width: "250px",
+//         backgroundColor: "#1f2937", // gris oscuro
+//         left: 0,
+//         top: 0,
+//         padding: "1rem",
+//       }}
+//     >
+//       {/* <h3 className="text-center mb-4 fw-bold">HE</h3> */}
+//       <div className="text-center mb-4">
+//   <img src="/logo1.png" alt="Logo HE" style={{ maxWidth: "50px" }} className="img-fluid" />
+// </div>
+//       <Nav className="flex-column mb-auto">
+//         {links.map((link) => (
+//           <Nav.Item key={link.to}>
+//             <Nav.Link
+//               as={Link}
+//               to={link.to}
+//               className={`d-flex align-items-center text-white mb-2 ${
+//                 location.pathname === link.to ? "active fw-bold" : ""
+//               }`}
+//             >
+//               <span className="me-2">{link.icon}</span>
+//               {link.label}
+//             </Nav.Link>
+//           </Nav.Item>
+//         ))}
+//       </Nav>
+//     </div>
+//   );
+// };
+
+// export default Sidebar;
+
+
+// import React from "react";
+// import { Nav } from "react-bootstrap";
+// import { Link, useLocation } from "react-router-dom";
+// import {
+//   FiHome,
+//   FiClipboard,
+//   FiAlertCircle,
+//   FiDollarSign,
+//   FiFileText,
+// } from "react-icons/fi";
+// import "./Sidebar.css";
+
+// const Sidebar: React.FC = () => {
+//   const location = useLocation();
+
+//   const links = [
+//     { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
+//     { to: "/PreRegistroWizard", label: "PreOrden", icon: <FiClipboard /> },
+//     { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
+//     { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
+//     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
+//   ];
+
+//   return (
+//     <div className="sidebar d-flex flex-column position-fixed vh-100">
+//       <div className="text-center mb-4 mt-3">
+//         <img
+//           src="/higuerasinfondo.png"
+//           alt="Logo HE"
+//           style={{ maxWidth: "230px" }}
+//           className="img-fluid"
+//         />
+//       </div>
+
+//       <Nav className="flex-column mb-auto">
+//         {links.map((link) => (
+//           <Nav.Item key={link.to}>
+//             <Nav.Link
+//               as={Link}
+//               to={link.to}
+//               className={`sidebar-link d-flex align-items-center ${
+//                 location.pathname === link.to ? "active" : ""
+//               }`}
+//             >
+//               {/* <span className="me-2 fs-5">{link.icon}</span> */}
+//               <span className="me-3 sidebar-icon">{link.icon}</span>
+
+//               <span>{link.label}</span>
+//             </Nav.Link>
+//           </Nav.Item>
+//         ))}
+//       </Nav>
+//     </div>
+//   );
+// };
+
+// export default Sidebar;
+
+
+// src/components/layout/Sidebar.tsx
 // src/components/layout/Sidebar.tsx
 import React from "react";
 import { Nav } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import {
   FiHome,
-  FiSearch,
-  FiAlertCircle,
-  FiFileText,
   FiClipboard,
+  FiAlertCircle,
   FiDollarSign,
+  FiFileText,
+  FiSettings
 } from "react-icons/fi";
+import "./Sidebar.css";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
 
-  const links = [
+  // Leer usuario desde localStorage
+  const userData = localStorage.getItem("user");
+  const userRole = userData ? JSON.parse(userData).user_role : null;
+
+  //  Enlaces visibles para CLIENTES
+  const clientLinks = [
     { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
     { to: "/PreRegistroWizard", label: "PreOrden", icon: <FiClipboard /> },
-    { to: "/resultados", label: "Resultados", icon: <FiSearch /> },
     { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
     { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
+  ];
+
+  //  Enlaces visibles para ADMINISTRADOR
+  const adminLinks = [
+    { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
+    { to: "/admin", label: "Administración", icon: <FiSettings /> },
+     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
     
   ];
 
+  //  Seleccionar enlaces según rol
+  const links = userRole === "ADMINISTRADOR" ? adminLinks : clientLinks;
+
   return (
-    <div
-      className="d-flex flex-column text-white position-fixed vh-100"
-      style={{
-        width: "250px",
-        backgroundColor: "#1f2937", // gris oscuro
-        left: 0,
-        top: 0,
-        padding: "1rem",
-      }}
-    >
-      {/* <h3 className="text-center mb-4 fw-bold">HE</h3> */}
-      <div className="text-center mb-4">
-  <img src="/logo1.png" alt="Logo HE" style={{ maxWidth: "50px" }} className="img-fluid" />
-</div>
-      <Nav className="flex-column mb-auto">
+    <div className="sidebar">
+      <div className="sidebar-logo">
+        <img src="/higuerasinfondo.png" alt="Logo HE" />
+      </div>
+
+      <Nav className="flex-column sidebar-nav">
         {links.map((link) => (
           <Nav.Item key={link.to}>
             <Nav.Link
               as={Link}
               to={link.to}
-              className={`d-flex align-items-center text-white mb-2 ${
-                location.pathname === link.to ? "active fw-bold" : ""
+              className={`sidebar-link ${
+                location.pathname === link.to ? "active" : ""
               }`}
             >
-              <span className="me-2">{link.icon}</span>
-              {link.label}
+              <span className="sidebar-icon">{link.icon}</span>
+              <span className="sidebar-label">{link.label}</span>
             </Nav.Link>
           </Nav.Item>
         ))}

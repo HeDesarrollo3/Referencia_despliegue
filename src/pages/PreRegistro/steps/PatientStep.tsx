@@ -5,6 +5,8 @@ import Select from "react-select";
 import { findPatient, registerPatient } from "../../../services/api";
 import axios from "axios";
 import debounce from "lodash.debounce";
+import Swal from "sweetalert2";
+// import { title } from "process";
 
 interface PatientStepProps {
   token: string;
@@ -146,7 +148,16 @@ const PatientStep: React.FC<PatientStepProps> = ({
       }
     } catch (err) {
       console.error(err);
-      alert("❌ No se pudo buscar el paciente, puede crearlo manualmente");
+      Swal.fire({
+        title:"No se encuentra el paciente, puede crearlo manualmente",
+        icon:"info",
+        text:"Paciente no encontrado",
+         confirmButtonText: "Aceptar",
+           confirmButtonColor: "#357bdc",
+      });
+      //
+
+        // alert("❌ No se pudo buscar el paciente, puede crearlo manualmente");
       setPatientResults([]);
       setNoResults(true);
       setShowCreateModal(true);
@@ -207,6 +218,7 @@ const PatientStep: React.FC<PatientStepProps> = ({
       alert("❌ Error al crear paciente");
     }
   };
+  
 
   return (
     <div>

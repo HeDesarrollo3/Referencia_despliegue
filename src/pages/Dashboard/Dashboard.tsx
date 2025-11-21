@@ -2,55 +2,79 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import { FiFileText, FiAlertCircle, FiClipboard, FiSearch } from "react-icons/fi";
-// import MainLayout from "../../components/layout/MainLayout";
+import {
+  FiFileText,
+  FiAlertCircle,
+  FiClipboard,
+  FiSearch,
+  FiSettings,
+} from "react-icons/fi";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  // Obtener usuario
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // Detectar el rol (cambia según tu backend)
+const role = user.user_role || "CLIENTES";
+
+
+  console.log("Usuario completo:", user);
+console.log("ROL detectado:", role);
+
+
+  // Lista de tarjetas con reglas de visibilidad
   const cards = [
     {
-      title: "Consulta de Resultados",
-      text: "Visualiza los resultados de tus exámenes.",
-      route: "/resultados",
-      icon: <FiSearch size={32} className="text-primary mb-3" />,
+      title: "Administración",
+      text: "Administración de órdenes.",
+      route: "/admin",
+      icon: <FiSettings size={32} className="text-warning mb-3" />,
+      roles: ["ADMINISTRADOR"], // Solo administradores
+    },
+    {
+      title: "PreOrden",
+      text: "Registra pacientes de forma anticipada.",
+      route: "/PreRegistroWizard",
+      icon: <FiClipboard size={32} className="text-warning mb-3" />,
+      roles: ["CLIENTES"], // Solo clientes
     },
     {
       title: "Gestor de Novedades",
       text: "Administra novedades y reportes.",
       route: "/GestorDeNovedades",
       icon: <FiAlertCircle size={32} className="text-danger mb-3" />,
+      roles: ["CLIENTES"], // Solo clientes
     },
     {
       title: "Portafolio de Pruebas",
       text: "Explora el portafolio de pruebas disponibles.",
       route: "/portafolio",
       icon: <FiFileText size={32} className="text-success mb-3" />,
+      roles: ["ADMINISTRADOR", "CLIENTES"], // Todos los roles
     },
     {
-      title: "Pre Registro",
-      text: "Registra pacientes de forma anticipada.",
-      route: "/PreRegistroWizard",
-      icon: <FiClipboard size={32} className="text-warning mb-3" />,
-    },
-     {
       title: "Tarifaria",
       text: "Lista de productos tarifarios.",
       route: "/tarifaria",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
+      roles: ["CLIENTES"], // Solo clientes
     },
   ];
 
+  // Filtrado por rol
+  const filteredCards = cards.filter(card => card.roles.includes(role));
+
   return (
-    // <MainLayout pageTitle="Dashboard" userName="Carlos">
     <Container fluid className="py-3">
       <h2 className="mb-5 fw-bold">Panel Principal</h2>
+
       <Row>
-        {cards.map((card, index) => (
+        {filteredCards.map((card, index) => (
           <Col key={index} md={8} lg={3} className="mb-3">
             <Card
-            
-              className="shadow-sm h-100 border-0 rounded-3 card-hover card-img-top"
+              className="shadow-sm h-100 border-0 rounded-3 card-hover"
               role="button"
               onClick={() => navigate(card.route)}
             >
@@ -64,14 +88,10 @@ const Dashboard: React.FC = () => {
         ))}
       </Row>
     </Container>
-    // </MainLayout>
   );
 };
 
 export default Dashboard;
-
-
-
 
 
 //este es 09/09/2025 // src/pages/Dashboard.tsx

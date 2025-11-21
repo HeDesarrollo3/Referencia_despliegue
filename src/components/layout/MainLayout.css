@@ -1,12 +1,44 @@
-/* src/components/layout/MainLayout.css */
-
-.sidebar {
-  width: 240px;
-  min-height: 100%;
-  position: sticky;
-  top: 0;
+/* ============================
+   🌐 LAYOUT GENERAL
+============================ */
+.main-content {
+  margin-left: 250px;
+  transition: margin-left .3s ease;
 }
 
-main {
-  overflow-x: auto;
+.main-area {
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px);
+  padding-bottom: 70px;
+}
+
+/* ============================
+   📱 MOBILE Y TABLET
+============================ */
+@media (max-width: 992px) {
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  main.main-area {
+    margin-top: 120px !important; /* 🔥 altura correcta debajo del Topbar + Sidebar */
+  }
+}
+
+/* MOBILE puro (celulares pequeños) */
+@media (max-width: 576px) {
+  main.main-area {
+    margin-top: 130px !important;
+  }
+}
+/* ============================
+   🖥 VIEWPORT BAJO (650px)
+   Evitar que se tape la paginación
+============================ */
+@media (max-height: 700px) {
+  .main-area {
+    padding-bottom: 200px !important;
+  }
 }

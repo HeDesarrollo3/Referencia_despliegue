@@ -7,6 +7,7 @@ import { parseJwt } from "../../utils/jwt";
 
 const UserSettingsPage: React.FC = () => {
   const [formData, setFormData] = useState({
+    
     user_names: "",
     user_lastName: "",
     user_surName: "",
@@ -149,7 +150,7 @@ if (!passwordRegex.test(formData.passwordHash)) {
                     type="text"
                     name="user_identificationType"
                     value={formData.user_identificationType}
-                    onChange={handleChange}
+                    // onChange={handleChange}
                   />
                 </div>
 
@@ -159,7 +160,7 @@ if (!passwordRegex.test(formData.passwordHash)) {
                     type="text"
                     name="user_identification"
                     value={formData.user_identification}
-                    onChange={handleChange}
+                    // onChange={handleChange}
                   />
                 </div>
 
@@ -169,7 +170,7 @@ if (!passwordRegex.test(formData.passwordHash)) {
                     type="email"
                     name="user_email"
                     value={formData.user_email}
-                    onChange={handleChange}
+                    // onChange={handleChange}
                   />
                 </div>
 

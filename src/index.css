@@ -5,9 +5,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+   background-color: #fff !important;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* ============================
+   TABLA ADMIN - ESTILO HOVER
+   ============================ */
+
+
+.admin-row-hover:hover {
+  background-color: #f5f9ff !important;
+  transform: scale(1.01);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+  position: relative;
+}
+
+/* Suaviza filas */
+.table td, .table th {
+  vertical-align: middle !important;
 }

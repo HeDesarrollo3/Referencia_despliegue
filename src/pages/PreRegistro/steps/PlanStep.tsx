@@ -152,7 +152,7 @@ const PlanStep = forwardRef<PlanStepRef, PlanStepProps>(
     if (loading) {
       return (
         <div className="text-center py-4">
-          <Spinner animation="border" role="status" variant="primary" />
+          <Spinner animation="grow" role="status" variant="primary" />
           <p className="mt-2 mb-4">Cargando planes...</p>
 
           <Row className="g-3 justify-content-center">

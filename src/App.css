@@ -95,3 +95,17 @@ main {
   border-radius: 10px;
   min-height: 38px;
 }
+
+/* Asegura que el contenido principal no quede oculto bajo el sidebar */
+.main-content {
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 60px; /* deja espacio si el sidebar se hace barra superior */
+  }
+}
+
