@@ -19,7 +19,7 @@ const getPayloadArray = (res: any) => {
 //  1) OBTENER ÓRDENES POR ESTADO
 // =====================================================
 export const fetchOrdersByState = async (token: string | null, orderState = "REGISTRADA") => {
-  const url = `${API_URL}/orders/by-term/`;
+  const url = `${API_URL}/orders/by-term`;
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   const res = await axios.post(url, { orderState }, { headers });
@@ -35,7 +35,6 @@ export const fetchOrdersByState = async (token: string | null, orderState = "REG
       creationDate: order.creationDate,
       observation: order.observation,
 
-      // Paciente
       patientName: `${patient.firstName ?? ""} ${patient.middleName ?? ""} ${patient.lastName ?? ""} ${patient.surName ?? ""}`.trim(),
       identification: patient.identification,
       identificationType: patient.identificationType,
@@ -45,7 +44,6 @@ export const fetchOrdersByState = async (token: string | null, orderState = "REG
       birthDate: patient.birthDate,
       patientId: patient.patientId,
 
-      // Customer + Tarifa
       customerName: order.customer?.name || "N/A",
       customerId: order.customer?.customerId || "N/A",
       customerAccountId: order.customerAccount?.customerAccountId || "N/A",
@@ -73,12 +71,12 @@ export const fetchOrdersByState = async (token: string | null, orderState = "REG
 // =====================================================
 export const fetchAccountsByCustomer = async (token: string, customerId: string) => {
   try {
-    const res = await axios.get(
-      `${API_URL}/customers/${customerId}/accounts`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const url = `${API_URL}/customers/${customerId}/accounts`;
+    const res = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    return res.data.accounts || [];
+    return res.data.accounts ?? [];
   } catch (err: any) {
     console.error("❌ Error en fetchAccountsByCustomer:", err.response?.data || err.message);
     throw err;
@@ -90,16 +88,18 @@ export const fetchAccountsByCustomer = async (token: string, customerId: string)
 // =====================================================
 export const patchOrder = async (token: string, orderId: string, data: any) => {
   try {
-    const res = await axios.patch(
-      `${API_URL}/orders/${orderId}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const url = `${API_URL}/orders/${orderId}`;
+
+    console.log("🔵 Enviando PATCH a:", url);
+    console.log("📦 Payload enviado:", data);
+
+    const res = await axios.patch(url, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
     return res.data;
   } catch (err: any) {
     console.error("❌ Error en patchOrder:", err.response?.data || err.message);
@@ -112,16 +112,19 @@ export const patchOrder = async (token: string, orderId: string, data: any) => {
 // =====================================================
 export const changeOrderState = async (token: string, orderId: string, newState: string) => {
   try {
+    const url = `${API_URL}/orders/${orderId}/state`;
+  
     const res = await axios.patch(
-      `${API_URL}/orders/${orderId}/state`,
+      url,
       { state: newState },
       {
-        headers: {
+        headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       }
     );
+
     return res.data;
   } catch (err: any) {
     console.error("❌ Error en changeOrderState:", err.response?.data || err.message);

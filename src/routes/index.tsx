@@ -100,13 +100,13 @@ function AppRoutes() {
 
       {/* SOLO ADMIN */}
       <Route
-  path="/admin"
+  path="/Admin"
   element={
-    <ProtectedRoute role="ADMINISTRADOR">
+    // <ProtectedRoute role="ADMINISTRADOR">
       <MainLayout pageTitle="Administración" onLogout={() => console.log("Logout")}>
         <AdminPage />
       </MainLayout>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   }
 />
 
