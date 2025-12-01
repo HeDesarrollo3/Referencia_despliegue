@@ -11,6 +11,7 @@ import Login from "../pages/Login/Login";
 import RegistroUsuarios from "../pages/RegistroUsuarios/RegistroUsuarios";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import UserSettingsPage from "../pages/UserSettings/UserSettingsPage";
+import UserAdminPage from "../pages/UserAdmin/User";
 import RecuperarPassword from "../pages/RecuperarPassword/RecuperarPassword";
 import NotificationsPage from "../pages/Notificaciones/Notificaciones";
 import AdminPage from "../pages/Admin/Admin";
@@ -100,15 +101,25 @@ function AppRoutes() {
 
       {/* SOLO ADMIN */}
       <Route
-  path="/Admin"
-  element={
-    // <ProtectedRoute role="ADMINISTRADOR">
-      <MainLayout pageTitle="Administración" onLogout={() => console.log("Logout")}>
-        <AdminPage />
-      </MainLayout>
-    // </ProtectedRoute>
-  }
-/>
+        path="/Admin"
+        element={
+          // <ProtectedRoute role="ADMINISTRADOR">
+          <MainLayout pageTitle="Administración" onLogout={() => console.log("Logout")}>
+            <AdminPage />
+          </MainLayout>
+          // </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/User"
+        element={
+          // <ProtectedRoute role="ADMINISTRADOR">
+          <MainLayout pageTitle="Administración Usuarios" onLogout={() => console.log("Logout")}>
+            <UserAdminPage />
+          </MainLayout>
+          // </ProtectedRoute>
+        }
+      />
 
 
     </Routes>

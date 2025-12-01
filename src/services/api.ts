@@ -1,8 +1,9 @@
 // src/pages/PreRegistro/services/api.ts
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/v1/higuera-escalante";
+//const API_URL = "http://localhost:3000/api/v1/higuera-escalante";
 // const API_URL = "http://192.168.11.14:3000/api/v1/higuera-escalante";
+const API_URL = `${process.env.REACT_APP_API_URL}`;
 
 
 //buscar paciente por tipo y número de identificación
@@ -105,6 +106,35 @@ export const registerOrder = async (token: string, formData: any) => {
     throw err;
   }
 };
+
+// Obtiene todas cuentas
+export const getCustomer = async (token: string) => {
+  const res = await axios.post(
+    `${API_URL}/customers`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data.customers || [];
+};
+
+export const getCustomerTariffProducts = async (token: string, customerid: string) => {
+  const res = await axios.post(
+    `${API_URL}/tariff-product/by-account/${customerid}`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  return res.data.customerAccounts || [];
+
+  // Acceder a los productos de tarifa del primer cliente en la lista
+  //const customerAccounts = res.data.customerAccounts || [];
+  //if (customerAccounts.length > 0) {
+  //  return customerAccounts[0].tariff?.products || []; // Devuelve los productos de la primera cuenta del cliente
+  //}
+
+  //return []; // Devuelve un array vacío si no hay cuentas de cliente
+};
+
 
 // /// ✅ obtener lista de pre-registros (órdenes)
 

@@ -33,12 +33,19 @@ function Login() {
       });
 
       const token = response.data.access_token;
-
+      const user_role = response.data.user_role;
+      const user_customer = response.data.user_customer;
       if (response.data) {
         // Guardamos token y datos del usuario
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(response.data));
-        navigate("/dashboard");
+        localStorage.setItem("user_role", user_role);
+        localStorage.setItem("user_customer", user_customer);
+        if (user_role === "EBE2C0F1-84C3-4143-8FF8-9B0F888A2272") {
+          navigate("/dashboard");
+        }else {
+          navigate("/dashboard");
+        }
       } else {
         setError("No se recibió token. Verifica las credenciales.");
       }
