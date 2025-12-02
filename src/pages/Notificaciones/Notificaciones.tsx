@@ -12,19 +12,25 @@ const Notificaciones: React.FC = () => {
       const token = localStorage.getItem("token");
       if (token) {
         const payload = JSON.parse(atob(token.split(".")[1]));
-        const customerId = payload.customerId;
+                const customerId = payload.customerId;
 
         socket.emit("registerClient", { customerId });
       }
     });
 
-    socket.on("orderCompleted", (message: string) => {
-      console.log("🔔 Notificación recibida:", message);
+    socket.on("orderCompleted", (data: any) => {
+      console.log("🔔 Notificación recibida:", data);
+
+      // 🔥 Extraer texto correctamente
+      const msgText =
+        typeof data === "string"
+          ? data
+          : data?.message || JSON.stringify(data);
 
       setNotifications((prev) => [
         {
           id: Date.now(),
-          message,
+          message: msgText,
           date: new Date().toLocaleString(),
         },
         ...prev,

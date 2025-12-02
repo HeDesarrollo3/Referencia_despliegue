@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC<Props> = ({ children, role }) => {
 
   const parsed = JSON.parse(user);
 
-  // Tu API devuelve el rol así:
+  // API devuelve el rol así:
   //   user_role: "CLIENTES" o "ADMINISTRADOR"
   let userRole = parsed.user_role || "";
 

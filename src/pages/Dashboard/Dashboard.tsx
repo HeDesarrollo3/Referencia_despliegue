@@ -7,7 +7,8 @@ import {
   FiAlertCircle,
   FiClipboard,
   FiSearch,
-  FiSettings,
+  FiSettings,  
+  FiUserPlus,
 } from "react-icons/fi";
 
 const Dashboard: React.FC = () => {
@@ -17,7 +18,7 @@ const Dashboard: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // Detectar el rol (cambia según tu backend)
-const role = user.user_role || "CLIENTES";
+const role = user.user_role || "C2E3B48F-51A7-4B35-92D9-43EEBFBB6096";
 
 
   console.log("Usuario completo:", user);
@@ -31,35 +32,42 @@ console.log("ROL detectado:", role);
       text: "Administración de órdenes.",
       route: "/admin",
       icon: <FiSettings size={32} className="text-warning mb-3" />,
-      roles: ["ADMINISTRADOR"], // Solo administradores
+      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272"], // Solo administradores
+    },
+     {
+      title: "Administración Usuarios",
+      text: "Administración de órdenes.",
+      route: "/User",
+      icon: <FiUserPlus size={32} className="text-warning mb-3" />,
+      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272"], // Solo administradores
     },
     {
       title: "PreOrden",
       text: "Registra pacientes de forma anticipada.",
       route: "/PreRegistroWizard",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
-      roles: ["CLIENTES"], // Solo clientes
+      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
     },
     {
       title: "Gestor de Novedades",
       text: "Administra novedades y reportes.",
       route: "/GestorDeNovedades",
       icon: <FiAlertCircle size={32} className="text-danger mb-3" />,
-      roles: ["CLIENTES"], // Solo clientes
+      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
     },
     {
       title: "Portafolio de Pruebas",
       text: "Explora el portafolio de pruebas disponibles.",
       route: "/portafolio",
       icon: <FiFileText size={32} className="text-success mb-3" />,
-      roles: ["ADMINISTRADOR", "CLIENTES"], // Todos los roles
+      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272", "C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Todos los roles
     },
     {
       title: "Tarifaria",
       text: "Lista de productos tarifarios.",
       route: "/tarifaria",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
-      roles: ["CLIENTES"], // Solo clientes
+      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
     },
   ];
 

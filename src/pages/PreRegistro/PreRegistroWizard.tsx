@@ -5,6 +5,7 @@ import PatientStep from "./steps/PatientStep";
 import ProductsStep from "./steps/ProductsStep";
 import SummaryStep from "./steps/SummaryStep";
 import { getTariffProducts, getCie10 } from "../../services/api";
+import Swal from "sweetalert2";
 
 const PreRegistroWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -43,6 +44,7 @@ const PreRegistroWizard: React.FC = () => {
         setProductList(data);
       } catch (error) {
         console.error("Error al obtener productos:", error);
+        Swal.fire("Error", "No se pudieron obtener los productos", "error");
       }
     };
 
@@ -52,6 +54,7 @@ const PreRegistroWizard: React.FC = () => {
         setCie10List(data);
       } catch (error) {
         console.error("Error al obtener CIE10:", error);
+        Swal.fire("Error", "No se pudieron obtener los códigos CIE10", "error");
       }
     };
 
@@ -164,7 +167,13 @@ const PreRegistroWizard: React.FC = () => {
             productList={productList}
             cie10List={cie10List}
             onOrderRegistered={() => {
-              alert("✅ Pre-orden registrada con éxito");
+              Swal.fire({
+                title: "¡Registro exitoso!",
+                text: "La pre-orden fue registrada correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+              });
+              // alert("✅ Pre-orden registrada con éxito");
               setCurrentStep(1);
               setFormData({
                 customerAccountId: "",

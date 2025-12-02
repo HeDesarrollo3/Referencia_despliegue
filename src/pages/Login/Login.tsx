@@ -19,7 +19,7 @@ function Login() {
     setLoading(true);
     setError("");
 
-    if (!acepta) {
+    if (acepta) {
       setError("Debes aceptar la política de tratamiento de datos.");
       setLoading(false);
       return;
@@ -126,7 +126,7 @@ function Login() {
             </div>
 
             {/* Checkbox */}
-            <div className="form-check mb-3">
+            {/* <div className="form-check mb-3">
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -137,7 +137,7 @@ function Login() {
               <label className="form-check-label" htmlFor="politica">
                 Acepto la política de tratamiento de datos personales *
               </label>
-            </div>
+            </div> */}
 
             {/* Mensaje de campos obligatorios */}
             <div className="mb-2 text-muted text-center">

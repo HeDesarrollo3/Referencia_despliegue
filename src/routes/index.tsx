@@ -15,6 +15,7 @@ import RecuperarPassword from "../pages/RecuperarPassword/RecuperarPassword";
 import NotificationsPage from "../pages/Notificaciones/Notificaciones";
 import AdminPage from "../pages/Admin/Admin";
 import ProtectedRoute from "./ProtectedRoute";
+import UserPage from "../pages/UserAdmin/User";
 
 function AppRoutes() {
   return (
@@ -105,6 +106,17 @@ function AppRoutes() {
     // <ProtectedRoute role="ADMINISTRADOR">
       <MainLayout pageTitle="Administración" onLogout={() => console.log("Logout")}>
         <AdminPage />
+      </MainLayout>
+    // </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/User"
+  element={
+    // <ProtectedRoute role="ADMINISTRADOR">
+      <MainLayout pageTitle="Administración Usuarios" onLogout={() => console.log("Logout")}>
+        <UserPage />
       </MainLayout>
     // </ProtectedRoute>
   }

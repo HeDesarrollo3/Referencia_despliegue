@@ -109,3 +109,13 @@ main {
   }
 }
 
+.swal2-select {
+  display: block !important;
+  width: 100% !important;
+  padding: 10px !important;
+  font-size: 16px !important;
+  border-radius: 5px !important;
+  border: 1px solid #ced4da !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}

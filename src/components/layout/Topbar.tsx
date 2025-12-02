@@ -171,35 +171,45 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const navigate = useNavigate();
 
+  console.log("🚀 Renderizando socket");
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-
     if (storedUser) {
       const userData = JSON.parse(storedUser);
-      setUserName(`${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim());
+      setUserName(
+        `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim()
+      );
     }
 
-    // 🔵 WebSocket conectado
+    // 🔵 Esperar conexión del socket para registrar el cliente
     socket.on("connect", () => {
       console.log("🟢 WebSocket conectado desde Topbar");
 
       const token = localStorage.getItem("token");
       if (token) {
-        const payload = JSON.parse(atob(token.split(".")[1]));
+        const payload = JSON.parse(atob(token.split(".")[1])); 
         const customerId = payload.customerId;
+
+        console.log("📡 Enviando customerId al servidor:", customerId);
 
         socket.emit("registerClient", { customerId });
       }
     });
 
-    // 🔔 Recibir notificación
-    socket.on("orderCompleted", (message: string) => {
-      console.log("🔔 Notificación recibida en Topbar:", message);
+    // 🔔 Recibir notificaciones
+    socket.on("orderCompleted", (data: any) => {
+      console.log("🔔 Notificación recibida en Topbar:", data);
+
+      const msg =
+        typeof data === "string"
+          ? data
+          : data?.message || JSON.stringify(data);
 
       setNotifications((prev) => [
         {
           id: Date.now(),
-          message,
+          message: msg,
           date: new Date().toLocaleString(),
         },
         ...prev,
@@ -222,11 +232,9 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
     <>
       <Navbar bg="white" expand="lg" className="shadow-sm px-4 topbar">
         <Nav className="ms-auto d-flex align-items-center">
-          
-          {/* 🔔 ICONO CAMPANITA */}
+
           <Nav.Link className="position-relative me-3" onClick={() => setShowModal(true)}>
             <FiBell size={20} />
-
             {notifications.length > 0 && (
               <Badge
                 bg="danger"
@@ -238,11 +246,10 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
             )}
           </Nav.Link>
 
-          {/* 👤 MENÚ DE USUARIO */}
           <Dropdown align="end">
             <Dropdown.Toggle variant="light" className="d-flex align-items-center border-0 bg-transparent">
               <FiUser size={20} className="me-2 text-primary" />
-              <span className="fw-semibold text-dark"> {userName}</span>
+              <span className="fw-semibold text-dark">{userName}</span>
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
@@ -255,7 +262,6 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
         </Nav>
       </Navbar>
 
-      {/* 🔔 MODAL DE NOTIFICACIONES */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-light">
           <Modal.Title>🔔 Notificaciones</Modal.Title>
@@ -281,9 +287,9 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
             Cerrar
           </Button>
 
-          <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
+          {/* <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
             Ver todas
-          </Button>
+          </Button> */}
         </Modal.Footer>
       </Modal>
     </>

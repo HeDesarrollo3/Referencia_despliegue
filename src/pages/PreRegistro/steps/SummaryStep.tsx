@@ -530,7 +530,7 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
       Swal.fire({
         icon: "success",
         title: "Orden registrada",
-        text: "✅ La pre-orden fue guardada correctamente.",
+        text: "✅ La PreOrden fue guardada correctamente.",
         confirmButtonColor: "#28a745",
         timer: 2000,
         showConfirmButton: false,
@@ -555,7 +555,7 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
   return (
     <div className="p-3">
       <h5 className="fw-bold mb-4 text-center text-primary">
-        📋 RESUMEN DE LA PRE-ORDEN
+        📋 Resumen de la PreOrden
       </h5>
 
       <Row className="g-4">
@@ -691,7 +691,7 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
               Guardando...
             </>
           ) : (
-            "✅ Guardar Pre-Orden"
+            "✅ Guardar PreOrden"
           )}
         </Button>
       </div>

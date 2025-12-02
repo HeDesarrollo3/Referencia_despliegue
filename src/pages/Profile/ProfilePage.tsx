@@ -44,7 +44,7 @@ const ProfilePage: React.FC = () => {
               <h4 className="mt-3">
                 {user.user_names} {user.user_lastName} {user.user_surName}
               </h4>
-              <p className="text-muted">{user.user_role}</p>
+              {/* <p className="text-muted">{user.user_role}</p>   aqui viene el rol lo oculte porque viene es id */}  
             </div>
 
             <hr />
