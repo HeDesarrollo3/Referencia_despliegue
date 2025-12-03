@@ -1,52 +1,4 @@
-<<<<<<< HEAD
-// src/components/OrderTable.tsx
-import React from "react";
-import DataTable from "react-data-table-component";
-
-interface Props {
-  orders: any[];
-  onSearch: (text: string) => void;
-  onDetails: (order: any) => void;
-}
-
-const customStyles = {
-  headCells: {
-    style: {
-      backgroundColor: "#cfe2ff",
-      fontWeight: 600,
-      justifyContent: "center",
-    },
-  },
-};
-
-const OrderTable: React.FC<Props> = ({ orders, onSearch, onDetails }) => {
-  const columns = [
-    { name: "Número Orden", selector: (row: any) => row.orderNumber, sortable: true },
-    { name: "Estado", selector: (row: any) => row.state },
-    { name: "Fecha", selector: (row: any) => row.creationDate },
-    { name: "Paciente", selector: (row: any) => row.patientName },
-    {
-      name: "Acciones",
-      cell: (row: any) => (
-        <button
-          onClick={() => onDetails(row)}
-          className="btn btn-success btn-sm"
-        >
-          Detalles
-        </button>
-      ),
-    },
-  ];
-
-  return (
-    <>
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder="Buscar..."
-        onChange={(e) => onSearch(e.target.value)}
-=======
-// FILE: src/components/Admin/OrderTable.tsx
+// src/components/Admin/OrderTable.tsx
 import React, { useMemo } from "react";
 import DataTable from "react-data-table-component";
 
@@ -55,7 +7,7 @@ interface OrderRow {
   orderNumber: string;
   state: string;
   creationDate: string;
-  observation: string;
+  observation?: string;
   patientName: string;
 }
 
@@ -68,6 +20,16 @@ interface Props {
   onStateFilterChange: (value: string) => void;
 }
 
+const customStyles = {
+  headCells: {
+    style: {
+      backgroundColor: "#cfe2ff",
+      fontWeight: 600,
+      justifyContent: "center",
+    },
+  },
+};
+
 const OrderTable: React.FC<Props> = ({
   data,
   onRowClick,
@@ -78,24 +40,54 @@ const OrderTable: React.FC<Props> = ({
 }) => {
   const columns = useMemo(
     () => [
-      { name: "Número Orden", selector: (row: any) => row.orderNumber, sortable: true },
-      { name: "Estado", selector: (row: any) => row.state, sortable: true },
-      { name: "Fecha", selector: (row: any) => row.creationDate, sortable: true },
-      { name: "Paciente", selector: (row: any) => row.patientName },
-      { name: "Observación", selector: (row: any) => row.observation },
+      {
+        name: "Número Orden",
+        selector: (row: any) => row.orderNumber,
+        sortable: true,
+      },
+      {
+        name: "Estado",
+        selector: (row: any) => row.state,
+        sortable: true,
+      },
+      {
+        name: "Fecha",
+        selector: (row: any) => row.creationDate,
+        sortable: true,
+      },
+      {
+        name: "Paciente",
+        selector: (row: any) => row.patientName,
+      },
+      {
+        name: "Observación",
+        selector: (row: any) => row.observation ?? "—",
+      },
     ],
     []
   );
 
   return (
     <div>
-      {/* Filtros */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+      {/* FILTROS */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 12,
+        }}
+      >
         <select
           value={stateFilter}
           onChange={(e) => onStateFilterChange(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
+          style={{
+            padding: 8,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+            width: 200,
+          }}
         >
+          <option value="">Todos los estados</option>
           <option value="REGISTRADA">REGISTRADA</option>
           <option value="EN CURSO">EN CURSO</option>
           <option value="RECHAZADA">RECHAZADA</option>
@@ -106,36 +98,31 @@ const OrderTable: React.FC<Props> = ({
           placeholder="Buscar..."
           value={searchText}
           onChange={(e) => onSearch(e.target.value)}
-          style={{ padding: 8, width: 280, borderRadius: 6, border: "1px solid #ccc" }}
+          style={{
+            padding: 8,
+            width: 280,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+          }}
         />
       </div>
 
-      {/* Tabla */}
+      {/* TABLA */}
       <DataTable
         columns={columns}
         data={data}
         pagination
-        highlightOnHover
-        onRowClicked={onRowClick}
-        noDataComponent="No se encontraron órdenes."
->>>>>>> 36cbe16984eebd6b355488bc8a310eb5b5dc45a0
-      />
-
-      <DataTable
-        columns={columns}
-        data={orders}
-        pagination
         striped
         highlightOnHover
         customStyles={customStyles}
+        onRowClicked={onRowClick}
+        noDataComponent="No se encontraron órdenes."
       />
-    </>
+    </div>
   );
 };
 
 export default OrderTable;
-<<<<<<< HEAD
-
 
 
 
@@ -326,5 +313,3 @@ export default OrderTable;
 
 
 // export default OrderTable;
-=======
->>>>>>> 36cbe16984eebd6b355488bc8a310eb5b5dc45a0
