@@ -746,9 +746,9 @@ import Select from "react-select";
 import Swal from "sweetalert2";
 
 const CUSTOMERS_URL =
-  "http://localhost:3000/api/v1/higuera-escalante/customers";
+  "http://172.16.2.20:3000/api/v1/higuera-escalante/customers";
 const REGISTER_URL =
-  "http://localhost:3000/api/v1/higuera-escalante/users/register";
+  "http://172.16.2.20:3000/api/v1/higuera-escalante/users/register";
 
 const RegisterUserPage = () => {
   const navigate = useNavigate();

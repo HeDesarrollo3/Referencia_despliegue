@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = "http://localhost:3000/api/v1/higuera-escalante/auth/login";
+const API_URL = "http://172.16.2.20:3000/api/v1/higuera-escalante/auth/login";
 
 function Login() {
   const navigate = useNavigate();
