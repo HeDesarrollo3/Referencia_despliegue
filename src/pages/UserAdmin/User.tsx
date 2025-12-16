@@ -91,6 +91,12 @@ const UserPage: React.FC = () => {
   };
   {
     useEffect(() => {
+
+      
+       
+          document.title = "Usuarios - HE";
+        
+      
       // Cuando se abre el modal, deshabilitar el botón Guardar
       toggleSaveButton(false);
     }, [isModalOpen])

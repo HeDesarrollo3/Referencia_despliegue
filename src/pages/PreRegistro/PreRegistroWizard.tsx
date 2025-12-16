@@ -8,6 +8,13 @@ import { getTariffProducts, getCie10 } from "../../services/api";
 import Swal from "sweetalert2";
 
 const PreRegistroWizard: React.FC = () => {
+
+ useEffect(() => {
+    document.title = "PreOrden - HE";
+  }, []);
+
+
+
   const [currentStep, setCurrentStep] = useState(1);
   const [productList, setProductList] = useState<any[]>([]);
   const [cie10List, setCie10List] = useState<any[]>([]);

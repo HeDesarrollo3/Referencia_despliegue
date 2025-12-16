@@ -1,105 +1,195 @@
 // src/pages/Dashboard/Dashboard.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
+import { fetchDashBorad, fetchDashBoradUser } from "../../services/apiAdmin";
+import { RiTestTubeFill } from "react-icons/ri";
 import {
-  FiFileText,
+  FiUserCheck,
+  FiSend,
+  FiXCircle,
+  FiCheckCircle,
   FiAlertCircle,
+  FiFileText,
   FiClipboard,
-  FiSearch,
-  FiSettings,  
-  FiUserPlus,
 } from "react-icons/fi";
 
 const Dashboard: React.FC = () => {
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // Obtener usuario
+  // Obtener usuario y rol
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user.user_role || "C2E3B48F-51A7-4B35-92D9-43EEBFBB6096";
 
-  // Detectar el rol (cambia según tu backend)
-const role = user.user_role || "C2E3B48F-51A7-4B35-92D9-43EEBFBB6096";
+  // Estados de dashboard
+  const [dashboardData, setDashboardData] = useState<{
+    registered: number;
+    sentToSilhe: number;
+    rejected: number;
+    completed: number;
+  } | null>(null);
 
+  const [dashboardDataUser, setDashboardDataUser] = useState<{
+    registered: number;
+    active: number;
+    rejected: number;
+  } | null>(null);
 
-  console.log("Usuario completo:", user);
-console.log("ROL detectado:", role);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-
-  // Lista de tarjetas con reglas de visibilidad
-  const cards = [
-    {
-      title: "Administración",
-      text: "Administración de órdenes.",
-      route: "/admin",
-      icon: <FiSettings size={32} className="text-warning mb-3" />,
-      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272"], // Solo administradores
-    },
-     {
-      title: "Administración Usuarios",
-      text: "Administración de órdenes.",
-      route: "/User",
-      icon: <FiUserPlus size={32} className="text-warning mb-3" />,
-      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272"], // Solo administradores
-    },
-    {
+  // Tarjetas estáticas para roles clientes
+  const staticCards = [
+  {
       title: "PreOrden",
       text: "Registra pacientes de forma anticipada.",
       route: "/PreRegistroWizard",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
-      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
     },
     {
-      title: "Gestor de Novedades",
+      title: "Muestras Registradas",
       text: "Administra novedades y reportes.",
       route: "/GestorDeNovedades",
-      icon: <FiAlertCircle size={32} className="text-danger mb-3" />,
-      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
+      icon: <RiTestTubeFill size={32} className="text-danger mb-3" />,
+    },
+	{
+      title: "Tarifaria",
+      text: "Lista de productos tarifarios.",
+      route: "/tarifaria",
+      icon: <FiClipboard size={32} className="text-warning mb-3" />,
     },
     {
       title: "Portafolio de Pruebas",
       text: "Explora el portafolio de pruebas disponibles.",
       route: "/portafolio",
       icon: <FiFileText size={32} className="text-success mb-3" />,
-      roles: ["EBE2C0F1-84C3-4143-8FF8-9B0F888A2272", "C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Todos los roles
     },
-    {
-      title: "Tarifaria",
-      text: "Lista de productos tarifarios.",
-      route: "/tarifaria",
-      icon: <FiClipboard size={32} className="text-warning mb-3" />,
-      roles: ["C2E3B48F-51A7-4B35-92D9-43EEBFBB6096"], // Solo clientes
-    },
+    
+    
   ];
 
-  // Filtrado por rol
-  const filteredCards = cards.filter(card => card.roles.includes(role));
+  // Efecto para cargar datos
+  useEffect(() => {
+
+ 
+    document.title = "Dashboard - HE";
+  
+
+
+    const fetchData = async () => {
+      try {
+        const data = await fetchDashBorad(token);
+        const dataUser = await fetchDashBoradUser(token);
+        setDashboardData(data);
+        setDashboardDataUser(dataUser);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [token]);
 
   return (
     <Container fluid className="py-3">
       <h2 className="mb-5 fw-bold">Panel Principal</h2>
 
+      {/* Spinner mientras carga */}
+      {loading && (
+        <div className="text-center">
+          <Spinner animation="border" />
+          <p className="mt-3">Cargando datos...</p>
+        </div>
+      )}
+
       <Row>
-        {filteredCards.map((card, index) => (
-          <Col key={index} md={8} lg={3} className="mb-3">
-            <Card
-              className="shadow-sm h-100 border-0 rounded-3 card-hover"
-              role="button"
-              onClick={() => navigate(card.route)}
-            >
-              <Card.Body className="d-flex flex-column align-items-center text-center">
-                {card.icon}
-                <Card.Title className="fw-semibold">{card.title}</Card.Title>
-                <Card.Text className="text-muted">{card.text}</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
+        {/* Tarjetas dinámicas para rol administrador */}
+        {role === "EBE2C0F1-84C3-4143-8FF8-9B0F888A2272" && dashboardData && (
+          <>
+            {/* Ordenes Admin */}
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiFileText size={32} className="text-primary mb-3" />
+                  <Card.Title className="fw-semibold">Pendientes</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.registered} órdenes registradas</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiSend size={32} className="text-warning mb-3" />
+                  <Card.Title className="fw-semibold">Enviados a Silhe</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.sentToSilhe} órdenes enviadas</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiXCircle size={32} className="text-danger mb-3" />
+                  <Card.Title className="fw-semibold">Rechazados</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.rejected} órdenes rechazadas</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiCheckCircle size={32} className="text-success mb-3" />
+                  <Card.Title className="fw-semibold">Completados</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.completed} órdenes completadas</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            {/* Tarjetas de pacientes */}
+            {dashboardDataUser && ["registered", "active", "rejected"].map((key, idx) => (
+              <Col key={idx} md={8} lg={3} className="mb-3">
+                <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/user')}>
+                  <Card.Body className="d-flex flex-column align-items-center text-center">
+                    <FiUserCheck size={32} className={`mb-3 ${key === "registered" ? "text-primary" : key === "active" ? "text-success" : "text-danger"}`} />
+                    <Card.Title className="fw-semibold">Pacientes</Card.Title>
+                    <Card.Text className="text-muted">
+                      {key === "registered" && `${dashboardDataUser.registered ?? 0} pacientes registrados, pendientes de activar.`}
+                      {key === "active" && `${dashboardDataUser.active ?? 0} pacientes activos`}
+                      {key === "rejected" && `${dashboardDataUser.rejected ?? 0} pacientes rechazados`}
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </>
+        )}
+
+        {/* Tarjetas estáticas para clientes */}
+        {role !== "EBE2C0F1-84C3-4143-8FF8-9B0F888A2272" &&
+          staticCards.map((card, index) => (
+            <Col key={index} md={8} lg={3} className="mb-3">
+              <Card
+                className="shadow-sm h-100 border-0 rounded-3 card-hover card-img-top"
+                role="button"
+                onClick={() => navigate(card.route)}
+              >
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  {card.icon}
+                  <Card.Title className="fw-semibold">{card.title}</Card.Title>
+                  <Card.Text className="text-muted">{card.text}</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
       </Row>
     </Container>
   );
 };
 
 export default Dashboard;
+
 
 
 //este es 09/09/2025 // src/pages/Dashboard.tsx

@@ -1,11 +1,18 @@
 // src/components/Login.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
 const API_URL = "http://172.16.2.20:3000/api/v1/higuera-escalante/auth/login";
 
 function Login() {
+
+ useEffect(() => {
+    document.title = "Login - HE";
+  }, []);
+
+
+
   const navigate = useNavigate();
   const [identificacion, setIdentificacion] = useState("");
   const [clave, setClave] = useState("");

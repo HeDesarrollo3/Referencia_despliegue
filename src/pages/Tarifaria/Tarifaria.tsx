@@ -53,6 +53,13 @@ function Tarifaria() {
 
   // 🔹 Cargar tarifas y clientes desde el backend
   useEffect(() => {
+
+    
+     
+        document.title = "Tarifaria - HE";
+      
+    
+
     const fetchAccountsAndCustomers = async () => {
       setLoading(true);
       try {

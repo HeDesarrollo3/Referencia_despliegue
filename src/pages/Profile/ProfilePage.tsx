@@ -7,6 +7,13 @@ const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+
+
+ 
+    document.title = "Perfil Usuario- HE";
+  
+
+
     // 1️⃣ Obtener token e información del usuario
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");

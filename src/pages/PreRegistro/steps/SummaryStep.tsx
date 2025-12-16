@@ -473,6 +473,11 @@ interface SummaryStepProps {
   onOrderRegistered: (order: any) => void;
 }
 
+
+
+
+
+
 const SummaryStep: React.FC<SummaryStepProps> = ({
   token,
   formData,
@@ -480,6 +485,18 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
   cie10List,
   onOrderRegistered,
 }) => {
+
+
+
+const [openExamIndex, setOpenExamIndex] = useState<number | null>(null);
+
+const toggleExam = (index: number) => {
+  setOpenExamIndex(openExamIndex === index ? null : index);
+};
+
+
+
+
   const [loading, setLoading] = useState(false);
 
   const selectedAccount = productList.find(
@@ -655,7 +672,10 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
             <Card.Header className="bg-secondary text-white fw-semibold">
               🧪 Exámenes Solicitados
             </Card.Header>
-            <ListGroup variant="flush">
+
+{/* ///esta es la original que estaba bien */}
+
+            {/* <ListGroup variant="flush">
               {selectedProducts.length > 0 ? (
                 selectedProducts.map((p: any, idx: number) => (
                   <ListGroup.Item key={idx}>
@@ -668,7 +688,89 @@ const SummaryStep: React.FC<SummaryStepProps> = ({
               ) : (
                 <ListGroup.Item>No se seleccionaron productos.</ListGroup.Item>
               )}
-            </ListGroup>
+            </ListGroup> */}
+<ListGroup variant="flush">
+  {selectedProducts.length > 0 ? (
+    selectedProducts.map((p: any, idx: number) => (
+      <ListGroup.Item key={idx} className="p-0">
+        {/* HEADER CLICABLE */}
+        <div
+          className="d-flex justify-content-between align-items-center p-3 cursor-pointer"
+          style={{ cursor: "pointer" }}
+          onClick={() => toggleExam(idx)}
+        >
+          <span className="fw-semibold">{p.name}</span>
+          <div>
+            <b className="me-3">${p.price?.toLocaleString("es-CO")}</b>
+            <span className="text-primary">
+              {openExamIndex === idx ? "▲" : "▼"}
+            </span>
+          </div>
+        </div>
+
+        {/* CONTENIDO DESPLEGABLE */}
+       {openExamIndex === idx && (
+  <div className="px-4 pb-3 pt-2 bg-light border-top small">
+
+    {/* MUESTRA */}
+    <div className="mb-2">
+      <p className="fw-bold mb-1">🧪 Muestra</p>
+      <ul className="mb-1 ps-3">
+        <li>
+          <b>Tipo:</b> {p.sampleInfo?.type || "—"}
+        </li>
+        <li>
+          <b>Cantidad:</b> {p.sampleInfo?.quantity || "—"}
+        </li>
+        <li>
+          <b>Estabilidad:</b>
+          <ul className="ps-3 mb-1">
+            {(p.sampleInfo?.stability || []).map(
+              (s: string, i: number) => (
+                <li key={i}>{s}</li>
+              )
+            )}
+          </ul>
+        </li>
+        <li>
+          <b>Condiciones:</b>{" "}
+          {p.sampleInfo?.conditions || "—"}
+        </li>
+      </ul>
+    </div>
+
+    {/* REQUERIMIENTOS */}
+    <div>
+      <p className="fw-bold mb-1">📌 Requerimientos adicionales</p>
+      {p.additionalRequirements?.length > 0 ? (
+        <ul className="ps-3 mb-0">
+          {p.additionalRequirements.map(
+            (req: string, i: number) => (
+              <li key={i}>{req}</li>
+            )
+          )}
+        </ul>
+      ) : (
+        <p className="mb-0 fst-italic">
+          No presenta requerimientos adicionales
+        </p>
+      )}
+    </div>
+
+  </div>
+)}
+
+      </ListGroup.Item>
+    ))
+  ) : (
+    <ListGroup.Item>No se seleccionaron productos.</ListGroup.Item>
+  )}
+</ListGroup>
+
+            
+
+
+
             <Card.Footer className="bg-light text-end fw-bold text-success">
               💰 Total: ${total.toLocaleString("es-CO")}
             </Card.Footer>

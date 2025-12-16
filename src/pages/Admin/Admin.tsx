@@ -9,6 +9,13 @@ import { Console } from "console";
 const API_URL = `${process.env.REACT_APP_API_URL}`;
 
 const AdminPage: React.FC = () => {
+
+
+ 
+    document.title = " Ordenes- HE";
+  
+
+
   const [orders, setOrders] = useState<any[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
   const [state, setState] = useState<string>("REGISTRADA");

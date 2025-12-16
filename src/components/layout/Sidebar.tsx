@@ -262,10 +262,12 @@ import {
   FiDollarSign,
   FiFileText,
   FiSettings,
-  FiUser,
-  FiUsers
+  FiUsers,
+  FiDownload
 } from "react-icons/fi";
 import "./Sidebar.css";
+import { ImLab } from "react-icons/im";
+import { RiTestTubeFill } from "react-icons/ri";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -274,33 +276,33 @@ const Sidebar: React.FC = () => {
   const userData = localStorage.getItem("user");
   const userRole = userData ? JSON.parse(userData).user_role : null;
 
-  //  Enlaces visibles para CLIENTES
+  // 🔵 Enlaces para CLIENTES
   const clientLinks = [
     { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
     { to: "/PreRegistroWizard", label: "PreOrden", icon: <FiClipboard /> },
-    { to: "/GestorDeNovedades", label: "Novedades", icon: <FiAlertCircle /> },
+    { to: "/GestorDeNovedades", label: "Muestras Registradas", icon: <RiTestTubeFill /> },
+    { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
+    { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
+
+    // ✔ Enlace externo
+    {
+      external: true,
+      href: "https://silheplus.higueraescalante.com/Public/ExtranetLogin",
+      label: "Resultados",
+      icon: <FiDownload />,
+    },
+  ];
+
+  // 🟡 Enlaces para ADMIN
+  const adminLinks = [
+    { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
+    { to: "/admin", label: "Ordenes", icon: <FiSettings /> },
+    { to: "/user", label: "Usuarios", icon: <FiUsers /> },
     { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
     { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
   ];
 
-  //  Enlaces visibles para ADMINISTRADOR
-  const adminLinks = [
-    { to: "/dashboard", label: "Inicio", icon: <FiHome /> },
-     { to: "/admin", label: "Ordenes", icon: <FiSettings /> },
-     { to: "/user", label: "Usuarios", icon: <FiUsers /> },
-      { to: "/Tarifaria", label: "Tarifaria", icon: <FiDollarSign /> },
-    // { to: "/admin", label: "Administración", icon: <FiSettings /> },
-    // { to: "/User", label: "Administración Usuarios", icon: <FiUsers /> },
-    { to: "/portafolio", label: "Portafolio", icon: <FiFileText /> },
-
-
-    
-   
-  
-
-  ];
-
-  // Seleccionar enlaces según rol
+  // Selección según rol
   const links =
     userRole === "EBE2C0F1-84C3-4143-8FF8-9B0F888A2272" ? adminLinks : clientLinks;
 
@@ -311,18 +313,32 @@ const Sidebar: React.FC = () => {
       </div>
 
       <Nav className="flex-column sidebar-nav">
-        {links.map((link) => (
-          <Nav.Item key={link.to}>
-            <Nav.Link
-              as={Link}
-              to={link.to}
-              className={`sidebar-link ${
-                location.pathname === link.to ? "active" : ""
-              }`}
-            >
-              <span className="sidebar-icon">{link.icon}</span>
-              <span className="sidebar-label">{link.label}</span>
-            </Nav.Link>
+        {links.map((link, index) => (
+          <Nav.Item key={index}>
+            {/* 🔵 Enlace externo */}
+            {"external" in link && link.external ? (
+              <Nav.Link
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sidebar-link"
+              >
+                <span className="sidebar-icon">{link.icon}</span>
+                <span className="sidebar-label">{link.label}</span>
+              </Nav.Link>
+            ) : (
+              // 🟢 Enlace interno
+              <Nav.Link
+                as={Link}
+                to={link.to!} // <-- se garantiza que no es undefined
+                className={`sidebar-link ${
+                  location.pathname === link.to ? "active" : ""
+                }`}
+              >
+                <span className="sidebar-icon">{link.icon}</span>
+                <span className="sidebar-label">{link.label}</span>
+              </Nav.Link>
+            )}
           </Nav.Item>
         ))}
       </Nav>

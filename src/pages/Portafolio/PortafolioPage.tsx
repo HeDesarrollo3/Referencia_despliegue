@@ -1,7 +1,12 @@
 // src/pages/PortafolioPage.tsx
-import React from "react";
+import React, { useEffect } from "react";
 
 const PortafolioPage: React.FC = () => {
+  
+   useEffect(() => {
+      document.title = "Portafolio - HE";
+    }, []);
+  
   return (
     <div className="container mt-4">
       <h2>Portafolio de Pruebas</h2>

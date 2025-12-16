@@ -1,3 +1,544 @@
+//16/12/2025 agregamos selct de estados y generador de informe 
+import React, { useEffect, useState } from "react";
+import Table from "../../components/common/Table";
+import { patientColumns } from "./columns";
+import { getPreRegistros } from "../../services/api";
+import {
+  Modal,
+  Button,
+  Form,
+  Spinner,
+  Alert,
+  Card,
+  ListGroup,
+  Col,
+  Row,
+} from "react-bootstrap";
+import { FiDownload } from "react-icons/fi";
+
+
+// import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
+
+
+
+
+interface Paciente {
+  identification: string;
+  identificationType: string;
+  patientName: string;
+  gender: string;
+  birthDate: string;
+  mobileNumber: string;
+  email: string;
+  customerName?: string;
+  customerAccountName?: string;
+  tariffName?: string;
+  orderNumber?: string;
+  orderCie10?: string;
+  orderObservation?: string;
+  orderState?: string;
+  products?: any[];
+  orderCreationDate?: string;
+}
+
+const GestorDeNovedades: React.FC = () => {
+  const [registros, setRegistros] = useState<Paciente[]>([]);
+  const [filtered, setFiltered] = useState<Paciente[]>([]);
+  const [search, setSearch] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Paciente | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  //estas estados son apara generar el informe
+  const [fechaInicio, setFechaInicio] = useState("");
+const [fechaFin, setFechaFin] = useState("");
+
+
+  const token = localStorage.getItem("token") || "";
+
+  /* ================= PAGINACIÓN ================= */
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
+
+  /* ================= generacion de reportes ================= */
+const handleExportExcel = () => {
+  if (!filtered.length) {
+    alert("No hay datos para exportar");
+    return;
+  }
+
+  /* ================= ENCABEZADO ================= */
+  const encabezado = [
+    ["REPORTE DE ÓRDENES"],
+    [`Cliente: ${filtered[0]?.customerName || ""}`],
+    ["Laboratorio: Higuera Escalante"],
+    [`Fecha generación: ${new Date().toLocaleString("es-CO")}`],
+    [],
+  ];
+
+  /* ================= COLUMNAS ================= */
+  const columnas = [
+    "Orden",
+    "Paciente",
+    "Documento",
+    "Estado",
+    "Fecha de creación",
+    "Cliente",
+    "Tarifa",
+  ];
+
+  /* ================= FILAS ================= */
+  const filas = filtered.map((r) => [
+    r.orderNumber,
+    r.patientName,
+    `${r.identificationType} ${r.identification}`,
+    r.orderState,
+    r.orderCreationDate
+      ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+      : "",
+    r.customerName,
+    r.tariffName,
+  ]);
+
+  /* ================= HOJA ================= */
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    ...encabezado,
+    columnas,
+    ...filas,
+  ]);
+
+  /* ================= ESTILOS ================= */
+
+  // Título
+  const titleStyle = {
+    font: { bold: true, sz: 14 },
+  };
+
+  // 🟢 Cliente (encabezado)
+  const clienteHeaderStyle = {
+    font: { bold: true },
+    fill: { fgColor: { rgb: "39FF14" } }, // verde fosforescente
+    alignment: { vertical: "center" },
+  };
+
+  // Encabezados de tabla
+  const tableHeaderStyle = {
+    font: { bold: true, color: { rgb: "FFFFFF" } },
+    fill: { fgColor: { rgb: "0D6EFD" } },
+    alignment: { horizontal: "center", vertical: "center" },
+  };
+
+  // 🟡 Columnas destacadas
+  const highlightColumnStyle = {
+    fill: { fgColor: { rgb: "27F56F" } }, // amarillo suave
+  };
+
+  /* ================= APLICAR ESTILOS ================= */
+
+  // Título
+  worksheet[XLSX.utils.encode_cell({ r: 0, c: 0 })].s = titleStyle;
+
+  // 🟢 Cliente
+  worksheet[XLSX.utils.encode_cell({ r: 1, c: 0 })].s = clienteHeaderStyle;
+
+  // Encabezados de tabla
+  const headerRowIndex = encabezado.length;
+  columnas.forEach((_, colIndex) => {
+    const cellRef = XLSX.utils.encode_cell({
+      r: headerRowIndex,
+      c: colIndex,
+    });
+    worksheet[cellRef].s = tableHeaderStyle;
+  });
+
+  // 🟡 Resaltar columnas: Orden (0), Estado (3), Fecha (4)
+  filas.forEach((_, rowIndex) => {
+    [0, 3, 4].forEach((colIndex) => {
+      const cellRef = XLSX.utils.encode_cell({
+        r: headerRowIndex + 1 + rowIndex,
+        c: colIndex,
+      });
+      if (worksheet[cellRef]) {
+        worksheet[cellRef].s = highlightColumnStyle;
+      }
+    });
+  });
+
+  /* ================= ANCHO DE COLUMNAS ================= */
+  worksheet["!cols"] = [
+    { wch: 15 },
+    { wch: 35 },
+    { wch: 22 },
+    { wch: 15 },
+    { wch: 20 },
+    { wch: 30 },
+    { wch: 30 },
+  ];
+
+  /* ================= EXPORTAR ================= */
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte");
+
+  XLSX.writeFile(
+    workbook,
+    `reporte_ordenes_${Date.now()}.xlsx`
+  );
+};
+
+
+  /* ================= CARGA ================= */
+  useEffect(() => {
+
+    document.title = "Muestras Registradas - HE";
+
+    const fetchPreRegistros = async () => {
+      try {
+        const response = await getPreRegistros(token);
+        setRegistros(response || []);
+        setFiltered(response || []);
+      } catch (error) {
+        console.error("❌ Error cargando preregistros:", error);
+        setMessage("Error cargando preregistros");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPreRegistros();
+  }, [token]);
+
+  /* ================= FILTROS ================= */
+  useEffect(() => {
+    const term = search.toLowerCase();
+
+    let data = registros.filter(
+      (r) =>
+        r.identification?.toLowerCase().includes(term) ||
+        r.patientName?.toLowerCase().includes(term) ||
+        r.orderNumber?.toLowerCase().includes(term) ||
+        r.customerName?.toLowerCase().includes(term)
+    );
+
+     // FILTRO ESTADO
+    if (estadoFiltro) {
+      data = data.filter(
+        (r) => r.orderState?.toUpperCase() === estadoFiltro
+      );
+    }
+
+    // FILTRO FECHAS
+    
+
+  if (fechaInicio && fechaFin) {
+  data = data.filter((r) => {
+    if (!r.orderCreationDate) return false;
+
+    const orderDate = new Date(r.orderCreationDate)
+      .toISOString()
+      .slice(0, 10); // YYYY-MM-DD
+
+    return orderDate >= fechaInicio && orderDate <= fechaFin;
+  });
+}
+
+  
+
+
+    setFiltered(data);
+    setCurrentPage(1);
+  },[search, estadoFiltro, fechaInicio, fechaFin, registros]);
+
+  /* ================= PAGINACIÓN ================= */
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filtered.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+
+  const handleRowClick = (row: Paciente) => {
+    setSelectedOrder(row);
+    setShowModal(true);
+  };
+
+  return (
+    <div className="container mt-4">
+
+<Card className="shadow-sm border-0 mb-3 w-100">
+  <Card.Header className="mb-3 fw-bold" style={{ fontFamily: "Arial, sans-serif" }}>
+    <h3 >📊 Generación de Reportes</h3>    
+      
+   
+    
+  </Card.Header>
+
+  <Card.Body>
+    <Row className="g-3 align-items-end">
+      {/* FECHA INICIO */}
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="fw-semibold">
+            Fecha inicio
+          </Form.Label>
+          <Form.Control
+            type="date"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+          />
+        </Form.Group>
+      </Col>
+
+      {/* FECHA FIN */}
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="fw-semibold">
+            Fecha fin
+          </Form.Label>
+          <Form.Control
+            type="date"
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+          />
+        </Form.Group>
+      </Col>
+
+      {/* ESPACIADOR */}
+      <Col md={3}></Col>
+
+      {/* BOTÓN */}
+      <Col
+        md={3}
+        className="d-flex justify-content-end"
+      >
+        <Button
+          variant="outline-primary"
+          disabled={!fechaInicio || !fechaFin}
+          className="fw-semibold d-flex align-items-center gap-2 px-4 py-2 shadow-sm"
+          onClick={handleExportExcel}
+        >
+          <FiDownload size={17} />
+          Exportar reporte
+        </Button>
+      </Col>
+    </Row>
+  </Card.Body>
+</Card>
+
+
+
+
+      <h3 className="mb-4 fw-bold" style={{ fontFamily: "Arial, sans-serif" }}>
+        📋 Muestras Registradas
+      </h3>
+
+      {/* FILTROS */}
+      <div className="d-flex gap-3 mb-3">
+        {/* SELECT ESTADO */}
+        <Form.Select
+          value={estadoFiltro}
+          onChange={(e) => setEstadoFiltro(e.target.value)}
+          style={{
+            width: "220px",
+            fontSize: "1rem",
+            borderRadius: "0.5rem",
+            borderColor: "#007BFF",
+            padding: "0.75rem",
+          }}
+        >
+          <option value="">Todos los estados</option>
+          <option value="REGISTRADA">Registrada</option>
+          <option value="EN CURSO">En curso</option>
+          <option value="RECHAZADA">Rechazada</option>
+        </Form.Select>
+
+        {/* BUSCADOR */}
+        <Form.Control
+          type="text"
+          placeholder="Buscar por nombre, identificación, orden o cliente..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            fontSize: "1rem",
+            borderRadius: "0.5rem",
+            borderColor: "#007BFF",
+            padding: "0.75rem",
+          }}
+        />
+      </div>
+
+      {message && <Alert variant="danger">{message}</Alert>}
+
+      {loading ? (
+        <div className="text-center py-5">
+          <Spinner animation="border" variant="primary" /> Cargando registros...
+        </div>
+      ) : (
+        <>
+          <Table
+            columns={patientColumns}
+            data={currentRows}
+            striped
+            hover
+            onRowClick={handleRowClick}
+          />
+
+          {/* PAGINACIÓN */}
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <Button
+              variant="outline-primary"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              ◀ Anterior
+            </Button>
+
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+
+            <Button
+              variant="outline-primary"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Siguiente ▶
+            </Button>
+          </div>
+        </>
+      )}
+
+      {/* ================= MODAL ================= */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+        <Modal.Header closeButton className="bg-light">
+          <Modal.Title className="fw-bold text-primary">
+            🧾 Detalle de Orden #{selectedOrder?.orderNumber || "—"}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body className="p-3">
+          {selectedOrder ? (
+            <>
+              {/* DATOS DEL PACIENTE */}
+              <Card className="shadow-sm border-0 mb-3">
+                <Card.Header className="bg-primary text-white fw-semibold">
+                  👤 Datos del Paciente
+                </Card.Header>
+                <Card.Body>
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Nombre:</b> {selectedOrder.patientName}
+                      </p>
+                    </Col>
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Documento:</b> {selectedOrder.identificationType}-{selectedOrder.identification}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Fecha de nacimiento:</b>{" "}
+                        {selectedOrder.birthDate
+                          ? new Date(selectedOrder.birthDate).toLocaleDateString("es-CO")
+                          : "—"}
+                      </p>
+                    </Col>
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Sexo:</b> {selectedOrder.gender || "—"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row className="mb-2">
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Email:</b> {selectedOrder.email || "—"}
+                      </p>
+                    </Col>
+                    <Col md={6}>
+                      <p className="mb-1">
+                        <b>Teléfono:</b> {selectedOrder.mobileNumber || "—"}
+                      </p>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+
+              {/* PLAN / ENTIDAD */}
+              <Card className="shadow-sm border-0 mb-3">
+                <Card.Header className="bg-info text-white fw-semibold">
+                  🏥 Plan / Entidad
+                </Card.Header>
+                <Card.Body>
+                  <p><b>Cliente:</b> {selectedOrder.customerName || "—"}</p>
+                  <p><b>Cuenta:</b> {selectedOrder.customerAccountName || "—"}</p>
+                  <p><b>Tarifa:</b> {selectedOrder.tariffName || "—"}</p>
+                  <p><b>Estado:</b> {selectedOrder.orderState || "—"}</p>
+                  <p><b>Observación:</b> {selectedOrder.orderObservation || "Sin observaciones"}</p>
+                </Card.Body>
+              </Card>
+
+              {/* EXÁMENES SOLICITADOS */}
+              <Card className="shadow-sm border-0 mb-3">
+                <Card.Header className="bg-secondary text-white fw-semibold">
+                  🧪 Exámenes Solicitados
+                </Card.Header>
+                <ListGroup variant="flush">
+                  {selectedOrder.products?.length ? (
+                    selectedOrder.products.map((p, i) => (
+                      <ListGroup.Item key={i}>
+                        <div className="d-flex justify-content-between">
+                          <span>{p.product?.name ?? "—"}</span>
+                          <b>
+                            {p.price?.toLocaleString("es-CO", {
+                              style: "currency",
+                              currency: "COP",
+                              minimumFractionDigits: 0,
+                            })}
+                          </b>
+                        </div>
+                      </ListGroup.Item>
+                    ))
+                  ) : (
+                    <ListGroup.Item>No se seleccionaron productos.</ListGroup.Item>
+                  )}
+                </ListGroup>
+                <Card.Footer className="bg-light text-end fw-bold text-success">
+                  💰 Total:{" "}
+                  {selectedOrder.products
+                    ?.reduce((sum, p) => sum + (p.price || 0), 0)
+                    .toLocaleString("es-CO", { style: "currency", currency: "COP" })}
+                </Card.Footer>
+              </Card>
+            </>
+          ) : (
+            <p>No hay detalles para mostrar.</p>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default GestorDeNovedades;
+
+
+
+
+
+
+
 // import React, { useEffect, useState } from "react";
 // import Table from "../../components/common/Table";
 // import { patientColumns } from "./columns";
@@ -279,286 +820,13 @@
 //   );
 // };
 
-// export default GestorDeNovedades;
 
-
-
-
-
-
-
-import React, { useEffect, useState } from "react";
-import Table from "../../components/common/Table";
-import { patientColumns } from "./columns";
-import { getPreRegistros } from "../../services/api";
-import { Modal, Button, Form, Spinner, Alert, Card, ListGroup, Col, Row } from "react-bootstrap";
-
-interface Paciente {
-  identification: string;
-  identificationType: string;
-  patientName: string;
-  gender: string;
-  birthDate: string;
-  mobileNumber: string;
-  email: string;
-  customerName?: string;
-  customerAccountName?: string;
-  tariffName?: string;
-  orderNumber?: string;
-  orderCie10?: string;
-  orderObservation?: string;
-  orderState?: string;
-  products?: any[];
-}
-
-const GestorDeNovedades: React.FC = () => {
-  const [registros, setRegistros] = useState<Paciente[]>([]);
-  const [filtered, setFiltered] = useState<Paciente[]>([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<Paciente | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const token = localStorage.getItem("token") || "";
-
-  // PAGINACIÓN
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
-  useEffect(() => {
-    const fetchPreRegistros = async () => {
-      try {
-        const response = await getPreRegistros(token);
-        setRegistros(response || []);
-        setFiltered(response || []);
-      } catch (error) {
-        console.error("❌ Error cargando preregistros:", error);
-        setMessage("Error cargando preregistros");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPreRegistros();
-  }, [token]);
-
-  useEffect(() => {
-    const term = search.toLowerCase();
-    const newFiltered = registros.filter(
-      (r) =>
-        r.identification?.toLowerCase().includes(term) ||
-        r.patientName?.toLowerCase().includes(term) ||
-        r.orderNumber?.toLowerCase().includes(term) ||
-        r.customerName?.toLowerCase().includes(term)
-    );
-    setFiltered(newFiltered);
-    setCurrentPage(1); // Reinicia a la primera página cuando se busca
-  }, [search, registros]);
-
-  // Cálculo de paginación
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filtered.slice(indexOfFirstRow, indexOfLastRow);
-  const totalPages = Math.ceil(filtered.length / rowsPerPage);
-
-  const handleRowClick = (row: Paciente) => {
-    setSelectedOrder(row);
-    setShowModal(true);
-  };
-
-  return (
-    <div className="container mt-4">
-      <h3 className="mb-4 fw-bold " style={{ fontFamily: "Arial, sans-serif" }}>
-        📋 Gestor de Novedades
-      </h3>
-
-      <Form.Control
-        type="text"
-        placeholder="Buscar por nombre, identificación, orden o cliente..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-3"
-        style={{
-          fontSize: "1rem",
-          borderRadius: "0.5rem",
-          borderColor: "#007BFF",
-          padding: "0.75rem",
-        }}
-      />
-
-      {message && <Alert variant="danger">{message}</Alert>}
-
-      {loading ? (
-        <div className="text-center py-5">
-          <Spinner animation="border" variant="primary" /> Cargando registros...
-        </div>
-      ) : (
-        <>
-          {/* TABLA */}
-          <Table
-            columns={patientColumns}
-            data={currentRows}
-            striped
-            hover
-            onRowClick={handleRowClick}
-          />
-
-          {/* PAGINACIÓN */}
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <Button
-              variant="outline-primary"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              ◀ Anterior
-            </Button>
-
-            <span>
-              Página {currentPage} de {totalPages}
-            </span>
-
-            <Button
-              variant="outline-primary"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Siguiente ▶
-            </Button>
-          </div>
-        </>
-      )}
-
-      {/* ===========================
-            MODAL DETALLE DE ORDEN
-      ============================ */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
-        <Modal.Header closeButton className="bg-light">
-          <Modal.Title className="fw-bold text-primary">
-            🧾 Detalle de Orden #{selectedOrder?.orderNumber || "—"}
-          </Modal.Title>
-        </Modal.Header>
-
-        <Modal.Body className="p-3">
-          {selectedOrder ? (
-            <>
-              {/* DATOS DEL PACIENTE */}
-              <Card className="shadow-sm border-0 mb-3">
-                <Card.Header className="bg-primary text-white fw-semibold">
-                  👤 Datos del Paciente
-                </Card.Header>
-                <Card.Body>
-                  <Row className="mb-2">
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Nombre:</b> {selectedOrder.patientName}
-                      </p>
-                    </Col>
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Documento:</b> {selectedOrder.identificationType}-{selectedOrder.identification}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-2">
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Fecha de nacimiento:</b>{" "}
-                        {selectedOrder.birthDate
-                          ? new Date(selectedOrder.birthDate).toLocaleDateString("es-CO")
-                          : "—"}
-                      </p>
-                    </Col>
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Sexo:</b> {selectedOrder.gender || "—"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-2">
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Email:</b> {selectedOrder.email || "—"}
-                      </p>
-                    </Col>
-                    <Col md={6}>
-                      <p className="mb-1">
-                        <b>Teléfono:</b> {selectedOrder.mobileNumber || "—"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-
-              {/* PLAN / ENTIDAD */}
-              <Card className="shadow-sm border-0 mb-3">
-                <Card.Header className="bg-info text-white fw-semibold">
-                  🏥 Plan / Entidad
-                </Card.Header>
-                <Card.Body>
-                  <p><b>Cliente:</b> {selectedOrder.customerName || "—"}</p>
-                  <p><b>Cuenta:</b> {selectedOrder.customerAccountName || "—"}</p>
-                  <p><b>Tarifa:</b> {selectedOrder.tariffName || "—"}</p>
-                  <p><b>Estado:</b> {selectedOrder.orderState || "—"}</p>
-                  <p><b>Observación:</b> {selectedOrder.orderObservation || "Sin observaciones"}</p>
-                </Card.Body>
-              </Card>
-
-              {/* EXÁMENES SOLICITADOS */}
-              <Card className="shadow-sm border-0 mb-3">
-                <Card.Header className="bg-secondary text-white fw-semibold">
-                  🧪 Exámenes Solicitados
-                </Card.Header>
-                <ListGroup variant="flush">
-                  {selectedOrder.products?.length ? (
-                    selectedOrder.products.map((p, i) => (
-                      <ListGroup.Item key={i}>
-                        <div className="d-flex justify-content-between">
-                          <span>{p.product?.name ?? "—"}</span>
-                          <b>
-                            {p.price?.toLocaleString("es-CO", {
-                              style: "currency",
-                              currency: "COP",
-                              minimumFractionDigits: 0,
-                            })}
-                          </b>
-                        </div>
-                      </ListGroup.Item>
-                    ))
-                  ) : (
-                    <ListGroup.Item>No se seleccionaron productos.</ListGroup.Item>
-                  )}
-                </ListGroup>
-                <Card.Footer className="bg-light text-end fw-bold text-success">
-                  💰 Total:{" "}
-                  {selectedOrder.products
-                    ?.reduce((sum, p) => sum + (p.price || 0), 0)
-                    .toLocaleString("es-CO", { style: "currency", currency: "COP" })}
-                </Card.Footer>
-              </Card>
-            </>
-          ) : (
-            <p>No hay detalles para mostrar.</p>
-          )}
-        </Modal.Body>
-
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
-  );
-};
-
-export default GestorDeNovedades;
 
 
 //---6/10/2025// // src/pages/GestorDeNovedades/GestorDeNovedades.tsx
 // import React, { useState, useEffect } from "react";
 // import Alert from "react-bootstrap/Alert";
+
 // import { getPreRegistros, updateOrder } from "../../services/api";
 
 // interface Product {

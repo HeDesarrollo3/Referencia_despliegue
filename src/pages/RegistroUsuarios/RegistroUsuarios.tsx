@@ -776,6 +776,12 @@ const RegisterUserPage = () => {
   //  🟢 Cargar empresas desde el backend
   // ===========================================================
   useEffect(() => {
+
+    
+     
+        document.title = "Registro - HE";
+      
+    
     const fetchEmpresas = async () => {
       try {
         const token = localStorage.getItem("token") || "";

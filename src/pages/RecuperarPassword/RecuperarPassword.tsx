@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Button, Card, Alert, Spinner } from "react-bootstrap";
 import { changePassword } from "../../services/api";
 
 const ChangePasswordPage: React.FC = () => {
+
+
+  
+   useEffect(() => {
+      document.title = "Recuperar contraseña - HE";
+    }, []);
+  
   const [formData, setFormData] = useState({
     identificationType: "",
     identification: "",
