@@ -1,5 +1,9 @@
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-export const socket = io("http://172.16.2.20:3000", {
-  transports: ["websocket"],
-});
+export const socket: Socket & { registered?: boolean } = io(
+  "http://172.16.2.20:3000",
+  {
+    autoConnect: true,
+    transports: ["websocket"],
+  }
+);

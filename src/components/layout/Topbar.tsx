@@ -1,3 +1,396 @@
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Navbar,
+  Nav,
+  Badge,
+  Dropdown,
+  Modal,
+  Button,
+  ListGroup,
+} from "react-bootstrap";
+import { FiBell, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../socket/socket";
+
+interface TopbarProps {
+  pageTitle: string;
+  onLogout: () => void;
+}
+
+const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+  const [userName, setUserName] = useState("Usuario");
+  const [showModal, setShowModal] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  const hasRegistered = useRef(false);
+
+  console.log("🚀 Renderizando Topbar");
+
+  useEffect(() => {
+    // 👤 Usuario
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      setUserName(
+        `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim()
+      );
+    }
+
+    const registerClient = () => {
+      if (hasRegistered.current || socket.registered) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const customerId = payload.customerId;
+
+      console.log("📡 Registrando cliente en socket:", customerId);
+
+      socket.emit("registerClient", { customerId });
+
+      hasRegistered.current = true;
+      socket.registered = true;
+    };
+
+    // 🟢 Si ya está conectado
+    if (socket.connected) {
+      registerClient();
+    }
+
+    // 🟡 Si se conecta después
+    socket.on("connect", () => {
+      console.log("🟢 WebSocket conectado");
+      registerClient();
+    });
+
+    // 🔔 Notificaciones
+    socket.on("orderCompleted", (data: any) => {
+      console.log("🔔 Notificación recibida:", data);
+
+      const msg =
+        typeof data === "string"
+          ? data
+          : data?.message || JSON.stringify(data);
+
+      setNotifications((prev) => [
+        {
+          id: Date.now(),
+          message: msg,
+          date: new Date().toLocaleString(),
+        },
+        ...prev,
+      ]);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("orderCompleted");
+    };
+  }, []);
+
+  const handleLogout = () => {
+    socket.registered = false;
+    onLogout();
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  return (
+    <>
+      <Navbar bg="white" expand="lg" className="shadow-sm px-4 topbar">
+        <Nav className="ms-auto d-flex align-items-center">
+          <Nav.Link
+            className="position-relative me-3"
+            onClick={() => setShowModal(true)}
+          >
+            <FiBell size={20} />
+            {notifications.length > 0 && (
+              <Badge
+                bg="danger"
+                pill
+                className="position-absolute top-0 start-100 translate-middle"
+              >
+                {notifications.length}
+              </Badge>
+            )}
+          </Nav.Link>
+
+          <Dropdown align="end">
+            <Dropdown.Toggle
+              variant="light"
+              className="d-flex align-items-center border-0 bg-transparent"
+            >
+              <FiUser size={20} className="me-2 text-primary" />
+              <span className="fw-semibold text-dark">{userName}</span>
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => navigate("/profile")}>
+                👤 Perfil
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/settings")}>
+                ⚙️ Configuración
+              </Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={handleLogout}>
+                🚪 Cerrar sesión
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </Nav>
+      </Navbar>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton className="bg-light">
+          <Modal.Title>🔔 Notificaciones</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {notifications.length === 0 ? (
+            <p className="text-center text-muted">No tienes notificaciones</p>
+          ) : (
+            <ListGroup variant="flush">
+              {notifications.map((n) => (
+                <ListGroup.Item key={n.id}>
+                  <div className="fw-semibold">{n.message}</div>
+                  <small className="text-muted">{n.date}</small>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => setShowModal(false)}
+          >
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
+
+export default Topbar;
+
+
+
+// ///este el actualizado con sockets y funcional 
+// // src/pages/Dashboard/Topbar.tsx
+// import React, { useEffect, useState } from "react";
+// import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
+// import { FiBell, FiUser } from "react-icons/fi";
+// import { useNavigate } from "react-router-dom";
+// import { socket } from "../../socket/socket";
+
+// interface TopbarProps {
+//   pageTitle: string;
+//   onLogout: () => void;
+// }
+
+// const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+//   const [userName, setUserName] = useState("Usuario");
+//   const [showModal, setShowModal] = useState(false);
+//   const [notifications, setNotifications] = useState<any[]>([]);
+//   const navigate = useNavigate();
+
+//   console.log("🚀 Renderizando socket");
+
+
+//   useEffect(() => {
+//   const storedUser = localStorage.getItem("user");
+//   if (storedUser) {
+//     const userData = JSON.parse(storedUser);
+//     setUserName(
+//       `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim()
+//     );
+//   }
+
+//   const registerClient = () => {
+//     const token = localStorage.getItem("token");
+//     if (!token) return;
+
+//     const payload = JSON.parse(atob(token.split(".")[1]));
+//     const customerId = payload.customerId;
+
+//     console.log("📡 Registrando cliente en socket:", customerId);
+//     socket.emit("registerClient", { customerId });
+//   };
+
+//   // 🟢 SI YA ESTÁ CONECTADO
+//   if (socket.connected) {
+//     console.log("🟢 Socket ya estaba conectado");
+//     registerClient();
+//   }
+
+//   // 🟡 SI SE CONECTA DESPUÉS
+//   socket.on("connect", () => {
+//     console.log("🟢 WebSocket conectado");
+//     registerClient();
+//   });
+
+//   // 🔔 Notificaciones
+//   socket.on("orderCompleted", (data: any) => {
+//     console.log("🔔 Notificación recibida:", data);
+
+//     const msg =
+//       typeof data === "string"
+//         ? data
+//         : data?.message || JSON.stringify(data);
+
+//     setNotifications((prev) => [
+//       {
+//         id: Date.now(),
+//         message: msg,
+//         date: new Date().toLocaleString(),
+//       },
+//       ...prev,
+//     ]);
+//   });
+
+//   return () => {
+//     socket.off("connect");
+//     socket.off("orderCompleted");
+//   };
+// }, []);
+
+
+//   // useEffect(() => {
+//   //   const storedUser = localStorage.getItem("user");
+//   //   if (storedUser) {
+//   //     const userData = JSON.parse(storedUser);
+//   //     setUserName(
+//   //       `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim()
+//   //     );
+//   //   }
+
+//   //   // 🔵 Esperar conexión del socket para registrar el cliente
+//   //   socket.on("connect", () => {
+//   //     console.log("🟢 WebSocket conectado desde Topbar");
+
+//   //     const token = localStorage.getItem("token");
+//   //     if (token) {
+//   //       const payload = JSON.parse(atob(token.split(".")[1])); 
+//   //       const customerId = payload.customerId;
+
+//   //       console.log("📡 Enviando customerId al servidor:", customerId);
+
+//   //       socket.emit("registerClient", { customerId });
+//   //     }
+//   //   });
+
+//   //   // 🔔 Recibir notificaciones
+//   //   socket.on("orderCompleted", (data: any) => {
+//   //     console.log("🔔 Notificación recibida en Topbar:", data);
+
+//   //     const msg =
+//   //       typeof data === "string"
+//   //         ? data
+//   //         : data?.message || JSON.stringify(data);
+
+//   //     setNotifications((prev) => [
+//   //       {
+//   //         id: Date.now(),
+//   //         message: msg,
+//   //         date: new Date().toLocaleString(),
+//   //       },
+//   //       ...prev,
+//   //     ]);
+//   //   });
+
+//   //   return () => {
+//   //     socket.off("orderCompleted");
+//   //     socket.off("connect");
+//   //   };
+//   // }, []);
+
+//   const handleLogout = () => {
+//     onLogout();
+//     localStorage.clear();
+//     navigate("/login");
+//   };
+
+//   return (
+//     <>
+//       <Navbar bg="white" expand="lg" className="shadow-sm px-4 topbar">
+//         <Nav className="ms-auto d-flex align-items-center">
+
+//           <Nav.Link className="position-relative me-3" onClick={() => setShowModal(true)}>
+//             <FiBell size={20} />
+//             {notifications.length > 0 && (
+//               <Badge
+//                 bg="danger"
+//                 pill
+//                 className="position-absolute top-0 start-100 translate-middle"
+//               >
+//                 {notifications.length}
+//               </Badge>
+//             )}
+//           </Nav.Link>
+
+//           <Dropdown align="end">
+//             <Dropdown.Toggle variant="light" className="d-flex align-items-center border-0 bg-transparent">
+//               <FiUser size={20} className="me-2 text-primary" />
+//               <span className="fw-semibold text-dark">{userName}</span>
+//             </Dropdown.Toggle>
+
+//             <Dropdown.Menu>
+//               <Dropdown.Item onClick={() => navigate("/profile")}>👤 Perfil</Dropdown.Item>
+//               <Dropdown.Item onClick={() => navigate("/settings")}>⚙️ Configuración</Dropdown.Item>
+//               <Dropdown.Divider />
+//               <Dropdown.Item onClick={handleLogout}>🚪 Cerrar sesión</Dropdown.Item>
+//             </Dropdown.Menu>
+//           </Dropdown>
+//         </Nav>
+//       </Navbar>
+
+//       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+//         <Modal.Header closeButton className="bg-light">
+//           <Modal.Title>🔔 Notificaciones</Modal.Title>
+//         </Modal.Header>
+
+//         <Modal.Body>
+//           {notifications.length === 0 ? (
+//             <p className="text-center text-muted">No tienes notificaciones</p>
+//           ) : (
+//             <ListGroup variant="flush">
+//               {notifications.map((n) => (
+//                 <ListGroup.Item key={n.id}>
+//                   <div className="fw-semibold">{n.message}</div>
+//                   <small className="text-muted">{n.date}</small>
+//                 </ListGroup.Item>
+//               ))}
+//             </ListGroup>
+//           )}
+//         </Modal.Body>
+
+//         <Modal.Footer>
+//           <Button variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
+//             Cerrar
+//           </Button>
+
+//           {/* <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
+//             Ver todas
+//           </Button> */}
+//         </Modal.Footer>
+//       </Modal>
+//     </>
+//   );
+// };
+
+// export default Topbar;
+
+
+
+
+
+
+
 // import React, { useEffect, useState } from "react";
 // import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
 // import { FiBell, FiUser } from "react-icons/fi";
@@ -153,147 +546,3 @@
 
 
 //7/11// src/pages/Dashboard/Dashboard.tsx
-// src/pages/Dashboard/Topbar.tsx
-import React, { useEffect, useState } from "react";
-import { Navbar, Nav, Badge, Dropdown, Modal, Button, ListGroup } from "react-bootstrap";
-import { FiBell, FiUser } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { socket } from "../../socket/socket";
-
-interface TopbarProps {
-  pageTitle: string;
-  onLogout: () => void;
-}
-
-const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
-  const [userName, setUserName] = useState("Usuario");
-  const [showModal, setShowModal] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const navigate = useNavigate();
-
-  console.log("🚀 Renderizando socket");
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      setUserName(
-        `${userData.user_lastName || ""} ${userData.user_surName || ""}`.trim()
-      );
-    }
-
-    // 🔵 Esperar conexión del socket para registrar el cliente
-    socket.on("connect", () => {
-      console.log("🟢 WebSocket conectado desde Topbar");
-
-      const token = localStorage.getItem("token");
-      if (token) {
-        const payload = JSON.parse(atob(token.split(".")[1])); 
-        const customerId = payload.customerId;
-
-        console.log("📡 Enviando customerId al servidor:", customerId);
-
-        socket.emit("registerClient", { customerId });
-      }
-    });
-
-    // 🔔 Recibir notificaciones
-    socket.on("orderCompleted", (data: any) => {
-      console.log("🔔 Notificación recibida en Topbar:", data);
-
-      const msg =
-        typeof data === "string"
-          ? data
-          : data?.message || JSON.stringify(data);
-
-      setNotifications((prev) => [
-        {
-          id: Date.now(),
-          message: msg,
-          date: new Date().toLocaleString(),
-        },
-        ...prev,
-      ]);
-    });
-
-    return () => {
-      socket.off("orderCompleted");
-      socket.off("connect");
-    };
-  }, []);
-
-  const handleLogout = () => {
-    onLogout();
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  return (
-    <>
-      <Navbar bg="white" expand="lg" className="shadow-sm px-4 topbar">
-        <Nav className="ms-auto d-flex align-items-center">
-
-          <Nav.Link className="position-relative me-3" onClick={() => setShowModal(true)}>
-            <FiBell size={20} />
-            {notifications.length > 0 && (
-              <Badge
-                bg="danger"
-                pill
-                className="position-absolute top-0 start-100 translate-middle"
-              >
-                {notifications.length}
-              </Badge>
-            )}
-          </Nav.Link>
-
-          <Dropdown align="end">
-            <Dropdown.Toggle variant="light" className="d-flex align-items-center border-0 bg-transparent">
-              <FiUser size={20} className="me-2 text-primary" />
-              <span className="fw-semibold text-dark">{userName}</span>
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("/profile")}>👤 Perfil</Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/settings")}>⚙️ Configuración</Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item onClick={handleLogout}>🚪 Cerrar sesión</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </Nav>
-      </Navbar>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton className="bg-light">
-          <Modal.Title>🔔 Notificaciones</Modal.Title>
-        </Modal.Header>
-
-        <Modal.Body>
-          {notifications.length === 0 ? (
-            <p className="text-center text-muted">No tienes notificaciones</p>
-          ) : (
-            <ListGroup variant="flush">
-              {notifications.map((n) => (
-                <ListGroup.Item key={n.id}>
-                  <div className="fw-semibold">{n.message}</div>
-                  <small className="text-muted">{n.date}</small>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          )}
-        </Modal.Body>
-
-        <Modal.Footer>
-          <Button variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
-            Cerrar
-          </Button>
-
-          {/* <Button variant="primary" size="sm" onClick={() => navigate("/notificaciones")}>
-            Ver todas
-          </Button> */}
-        </Modal.Footer>
-      </Modal>
-    </>
-  );
-};
-
-export default Topbar;

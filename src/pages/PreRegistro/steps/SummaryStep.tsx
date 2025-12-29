@@ -717,24 +717,16 @@ const toggleExam = (index: number) => {
       <p className="fw-bold mb-1">🧪 Muestra</p>
       <ul className="mb-1 ps-3">
         <li>
-          <b>Tipo:</b> {p.sampleInfo?.type || "—"}
+          <b>Tipo:</b> {p.tests?.[0]?.sampleTypes || "—"}
         </li>
         <li>
-          <b>Cantidad:</b> {p.sampleInfo?.quantity || "—"}
+          <b>Cantidad:</b> {p.tests?.[0]?.quantity || "—"}
         </li>
         <li>
-          <b>Estabilidad:</b>
-          <ul className="ps-3 mb-1">
-            {(p.sampleInfo?.stability || []).map(
-              (s: string, i: number) => (
-                <li key={i}>{s}</li>
-              )
-            )}
-          </ul>
+          <b>Estabilidad:</b> {p.tests?.[0]?.stability || "—"}
         </li>
         <li>
-          <b>Condiciones:</b>{" "}
-          {p.sampleInfo?.conditions || "—"}
+          <b>Condiciones:</b> {p.tests?.[0]?.temperature || "—"}
         </li>
       </ul>
     </div>
@@ -742,13 +734,9 @@ const toggleExam = (index: number) => {
     {/* REQUERIMIENTOS */}
     <div>
       <p className="fw-bold mb-1">📌 Requerimientos adicionales</p>
-      {p.additionalRequirements?.length > 0 ? (
+      {p.tests?.[0]?.terms ? (
         <ul className="ps-3 mb-0">
-          {p.additionalRequirements.map(
-            (req: string, i: number) => (
-              <li key={i}>{req}</li>
-            )
-          )}
+          <li>{p.tests[0].terms}</li>
         </ul>
       ) : (
         <p className="mb-0 fst-italic">
@@ -759,6 +747,7 @@ const toggleExam = (index: number) => {
 
   </div>
 )}
+
 
       </ListGroup.Item>
     ))

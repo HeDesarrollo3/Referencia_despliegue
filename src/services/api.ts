@@ -74,6 +74,7 @@ export const getTariffProducts = async (token: string) => {
     {},
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  console.log("🔍 Productos de tarifario encontrados:", res.data.customerAccounts);
   return res.data.customerAccounts || [];
 };
 
