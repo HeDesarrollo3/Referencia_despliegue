@@ -414,7 +414,11 @@ const handleExportExcel = () => {
         </>
       )}
 
-      {/* ================= MODAL ================= */}
+      
+     {/* /* ===========================
+            MODAL DETALLE DE ORDEN
+      ============================ */}
+      
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton className="bg-light">
           <Modal.Title className="fw-bold text-primary">
@@ -490,108 +494,37 @@ const handleExportExcel = () => {
               </Card>
 
               {/* EXÁMENES SOLICITADOS */}
-              {/* EXÁMENES SOLICITADOS */}
-<Card className="shadow-sm border-0 mb-3">
-  <Card.Header className="bg-secondary text-white fw-semibold">
-    🧪 Exámenes Solicitados
-  </Card.Header>
-
-  <ListGroup variant="flush">
-    {selectedOrder.products?.length ? (
-      selectedOrder.products.map((p: any, idx: number) => {
-        const product = p.product;
-
-        return (
-          <ListGroup.Item key={idx} className="p-0">
-            {/* HEADER */}
-            <div
-              className="d-flex justify-content-between align-items-center p-3"
-              style={{ cursor: "pointer" }}
-              onClick={() => toggleExam(idx)}
-            >
-              <span className="fw-semibold">
-                {product?.name || "—"}
-              </span>
-
-              <div>
-                <b className="me-3">
-                  {p.price?.toLocaleString("es-CO", {
-                    style: "currency",
-                    currency: "COP",
-                    minimumFractionDigits: 0,
-                  })}
-                </b>
-                <span className="text-primary">
-                  {openExamIndex === idx ? "▲" : "▼"}
-                </span>
-              </div>
-            </div>
-
-            {/* CONTENIDO */}
-            {openExamIndex === idx && (
-              <div className="px-4 pb-3 pt-2 bg-light border-top small">
-                {/* MUESTRA */}
-                <div className="mb-2">
-                  <p className="fw-bold mb-1">🧪 Muestra</p>
-                  <ul className="ps-3 mb-1">
-                    <li>
-                      <b>Tipo:</b>{" "}
-                      {product?.tests?.[0]?.sampleTypes || "—"}
-                    </li>
-                    <li>
-                      <b>Cantidad:</b>{" "}
-                      {product?.tests?.[0]?.quantity || "—"}
-                    </li>
-                    <li>
-                      <b>Estabilidad:</b>{" "}
-                      {product?.tests?.[0]?.stability || "—"}
-                    </li>
-                    <li>
-                      <b>Condiciones:</b>{" "}
-                      {product?.tests?.[0]?.temperature || "—"}
-                    </li>
-                  </ul>
-                </div>
-
-                {/* REQUERIMIENTOS */}
-                <div>
-                  <p className="fw-bold mb-1">
-                    📌 Requerimientos adicionales
-                  </p>
-                  {product?.tests?.[0]?.terms ? (
-                    <ul className="ps-3 mb-0">
-                      <li>{product.tests[0].terms}</li>
-                    </ul>
+              <Card className="shadow-sm border-0 mb-3">
+                <Card.Header className="bg-secondary text-white fw-semibold">
+                  🧪 Exámenes Solicitados
+                </Card.Header>
+                <ListGroup variant="flush">
+                  {selectedOrder.products?.length ? (
+                    selectedOrder.products.map((p, i) => (
+                      <ListGroup.Item key={i}>
+                        <div className="d-flex justify-content-between">
+                          <span>{p.product?.name ?? "—"}</span>
+                          <b>
+                            {p.price?.toLocaleString("es-CO", {
+                              style: "currency",
+                              currency: "COP",
+                              minimumFractionDigits: 0,
+                            })}
+                          </b>
+                        </div>
+                      </ListGroup.Item>
+                    ))
                   ) : (
-                    <p className="mb-0 fst-italic">
-                      No presenta requerimientos adicionales
-                    </p>
+                    <ListGroup.Item>No se seleccionaron productos.</ListGroup.Item>
                   )}
-                </div>
-              </div>
-            )}
-          </ListGroup.Item>
-        );
-      })
-    ) : (
-      <ListGroup.Item>
-        No se seleccionaron productos.
-      </ListGroup.Item>
-    )}
-  </ListGroup>
-
-  <Card.Footer className="bg-light text-end fw-bold text-success">
-    💰 Total:{" "}
-    {selectedOrder.products
-      ?.reduce((sum, p) => sum + (p.price || 0), 0)
-      .toLocaleString("es-CO", {
-        style: "currency",
-        currency: "COP",
-        minimumFractionDigits: 0,
-      })}
-  </Card.Footer>
-</Card>
-
+                </ListGroup>
+                <Card.Footer className="bg-light text-end fw-bold text-success">
+                  💰 Total:{" "}
+                  {selectedOrder.products
+                    ?.reduce((sum, p) => sum + (p.price || 0), 0)
+                    .toLocaleString("es-CO", { style: "currency", currency: "COP" })}
+                </Card.Footer>
+              </Card>
             </>
           ) : (
             <p>No hay detalles para mostrar.</p>
@@ -609,6 +542,8 @@ const handleExportExcel = () => {
 };
 
 export default GestorDeNovedades;
+
+
 
 
 
