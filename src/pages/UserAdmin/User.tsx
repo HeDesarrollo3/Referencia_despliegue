@@ -3,6 +3,7 @@ import axios from "axios";
 import DataTable from "react-data-table-component";
 import { Modal, Button, Card, Row, Col } from "react-bootstrap";
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx'; // Importar librería para Excel
 
 
 
@@ -101,6 +102,31 @@ const UserPage: React.FC = () => {
       toggleSaveButton(false);
     }, [isModalOpen])
   }
+
+   // --- FUNCIÓN DE EXPORTACIÓN ---
+    const exportToExcel = () => {
+      // 1. Mapeamos los datos para que tengan cabeceras amigables
+      const dataToExport = filteredUsers.map(user => ({
+        "Nombre Completo": `${user.names} ${user.lastName} ${user.surName}`,
+        "Tipo Doc": user.identificationType,
+        "Identificación": user.identification,
+        "Email": user.email,
+        "Cliente": user.customer.name,
+        "NIT Cliente": user.customer.identification,
+        "Especialidad": user.specialty || "N/A",
+        "Estado": user.state,
+        "Fecha Registro": new Date(user.registerDate).toLocaleDateString("es-CO")
+      }));
+  
+      // 2. Crear el libro de trabajo (workbook) y la hoja (worksheet)
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Usuarios");
+  
+      // 3. Generar el archivo y descargarlo
+      XLSX.writeFile(workbook, `Reporte_Usuarios_${state}_${new Date().getTime()}.xlsx`);
+    };
+
   const updateEstatusUser = async () => {
     if (!selectedUser) return; // Asegúrate de que selectedOrder no sea nulo
 
@@ -342,7 +368,7 @@ const UserPage: React.FC = () => {
 
   return (
     <div>
-      <h1>Usuarios</h1>
+      <h2>Usuarios</h2>
       <p>Consulta de usuarios</p>
 
       {/* Filtros */}
@@ -354,7 +380,14 @@ const UserPage: React.FC = () => {
           marginBottom: "20px",
         }}
       >
-        <div>
+        <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+        >
           <label htmlFor="state" style={{ marginRight: "10px" }}>
             Estado:
           </label>
@@ -375,10 +408,7 @@ const UserPage: React.FC = () => {
             <option value="A">Activo</option>
             <option value="X">Rechazado</option>
           </select>
-        </div>
-
-        <div>
-          <form autoComplete="off" style={{ margin: 0 }}>
+           <form autoComplete="off" style={{ margin: 10 }}>
             <input
               id="user-search"
               name="user-search"
@@ -399,7 +429,13 @@ const UserPage: React.FC = () => {
               }}
             />
           </form>
+          {/* BOTÓN DE DESCARGA */}
+                  <Button variant="outline-success" onClick={exportToExcel}>
+                    <i className="bi bi-file-earmark-excel"></i> Descargar Excel
+                  </Button>
         </div>
+
+        
       </div>
 
       {/* Tabla */}

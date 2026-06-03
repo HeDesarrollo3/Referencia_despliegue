@@ -70,7 +70,86 @@ const [fechaFin, setFechaFin] = useState("");
   const rowsPerPage = 10;
 
 
-  /* ================= generacion de reportes ================= */
+//   /* ================= generacion de reportes ================= */
+// const handleExportExcel = () => {
+//   if (!filtered.length) {
+//     alert("No hay datos para exportar");
+//     return;
+//   }
+
+//   /* ================= ENCABEZADO ================= */
+//   const encabezado = [
+//     ["REPORTE DE ÓRDENES"],
+//     [`Cliente: ${filtered[0]?.customerName || ""}`],
+//     ["Laboratorio: Higuera Escalante"],
+//     [`Fecha generación: ${new Date().toLocaleString("es-CO")}`],
+//     [],
+//   ];
+
+//   /* ================= COLUMNAS ================= */
+//   const columnas = [
+//     "Orden",
+//     "Paciente",
+//     "Documento",
+//     "Estado",
+//     "Fecha de creación",
+//     "Cliente",
+//     "Tarifa",
+//     "Observación",
+//     "Productos",
+//     "Total",
+//   ];
+
+  /* ================= FILAS ================= */
+  // const filas = filtered.map((r) => [
+  //   r.orderNumber,
+  //   r.patientName,
+  //   `${r.identificationType} ${r.identification}`,
+  //   r.orderState,
+  //   r.orderCreationDate
+  //     ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+  //     : "",
+  //   r.customerName,
+  //   r.tariffName,
+  // ]);
+
+const filas = filtered.flatMap((r) => {
+  if (!r.products || r.products.length === 0) {
+    return [[
+      r.orderNumber,
+      r.patientName,
+      `${r.identificationType} ${r.identification}`,
+      r.orderState,
+      r.orderCreationDate
+        ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+        : "",
+      r.customerName,
+      r.tariffName,
+      "—",
+      "",
+      r.orderObservation || "",
+    ]];
+  }
+
+  return r.products.map((p) => [
+    r.orderNumber,
+    r.patientName,
+    `${r.identificationType} ${r.identification}`,
+    r.orderState,
+    r.orderCreationDate
+      ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+      : "",
+    r.customerName,
+    r.tariffName,
+     r.orderObservation || "",
+    p.product?.name || "—",
+    p.price || 0,
+   
+  ]);
+});
+
+/*--------Reportes----------------------------*/
+
 const handleExportExcel = () => {
   if (!filtered.length) {
     alert("No hay datos para exportar");
@@ -95,20 +174,45 @@ const handleExportExcel = () => {
     "Fecha de creación",
     "Cliente",
     "Tarifa",
+    "Observación",
+    "Producto",
+    "Precio",
   ];
 
   /* ================= FILAS ================= */
-  const filas = filtered.map((r) => [
-    r.orderNumber,
-    r.patientName,
-    `${r.identificationType} ${r.identification}`,
-    r.orderState,
-    r.orderCreationDate
-      ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
-      : "",
-    r.customerName,
-    r.tariffName,
-  ]);
+  const filas = filtered.flatMap((r) => {
+    if (!r.products || r.products.length === 0) {
+      return [[
+        r.orderNumber,
+        r.patientName,
+        `${r.identificationType} ${r.identification}`,
+        r.orderState,
+        r.orderCreationDate
+          ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+          : "",
+        r.customerName,
+        r.tariffName,
+        r.orderObservation || "",
+        "—",
+        0,
+      ]];
+    }
+
+    return r.products.map((p) => [
+      r.orderNumber,
+      r.patientName,
+      `${r.identificationType} ${r.identification}`,
+      r.orderState,
+      r.orderCreationDate
+        ? new Date(r.orderCreationDate).toLocaleDateString("es-CO")
+        : "",
+      r.customerName,
+      r.tariffName,
+      r.orderObservation || "",
+      p.product?.name || "—",
+      p.price || 0,
+    ]);
+  });
 
   /* ================= HOJA ================= */
   const worksheet = XLSX.utils.aoa_to_sheet([
@@ -117,42 +221,22 @@ const handleExportExcel = () => {
     ...filas,
   ]);
 
-  /* ================= ESTILOS ================= */
+  /* ================= ESTILOS BASE ================= */
 
-  // Título
   const titleStyle = {
     font: { bold: true, sz: 14 },
   };
 
-  // 🟢 Cliente (encabezado)
-  const clienteHeaderStyle = {
-    font: { bold: true },
-    fill: { fgColor: { rgb: "39FF14" } }, // verde fosforescente
-    alignment: { vertical: "center" },
-  };
-
-  // Encabezados de tabla
   const tableHeaderStyle = {
     font: { bold: true, color: { rgb: "FFFFFF" } },
     fill: { fgColor: { rgb: "0D6EFD" } },
     alignment: { horizontal: "center", vertical: "center" },
   };
 
-  // 🟡 Columnas destacadas
-  const highlightColumnStyle = {
-    fill: { fgColor: { rgb: "27F56F" } }, // amarillo suave
-  };
+  worksheet["A1"].s = titleStyle;
 
-  /* ================= APLICAR ESTILOS ================= */
-
-  // Título
-  worksheet[XLSX.utils.encode_cell({ r: 0, c: 0 })].s = titleStyle;
-
-  // 🟢 Cliente
-  worksheet[XLSX.utils.encode_cell({ r: 1, c: 0 })].s = clienteHeaderStyle;
-
-  // Encabezados de tabla
   const headerRowIndex = encabezado.length;
+
   columnas.forEach((_, colIndex) => {
     const cellRef = XLSX.utils.encode_cell({
       r: headerRowIndex,
@@ -161,20 +245,54 @@ const handleExportExcel = () => {
     worksheet[cellRef].s = tableHeaderStyle;
   });
 
-  // 🟡 Resaltar columnas: Orden (0), Estado (3), Fecha (4)
-  filas.forEach((_, rowIndex) => {
-    [0, 3, 4].forEach((colIndex) => {
+  /* ================= 🎨 COLORES POR ORDEN ================= */
+
+const COLORS = [
+  "B4D2F0", // Azul
+  "A9E4C5", // Verde menta
+  "F7E3A1", // Amarillo
+  "F2B8B5", // Rosado
+  "CDB7E2", // Morado
+  "A7E0D8", // Turquesa
+  "F6C89F", // Naranja
+  "D7BDE2", // Violeta
+  "F4D03F", // Amarillo intenso
+  "85C1E9", // Azul fuerte
+  "7DCEA0", // Verde fuerte
+  "EC7063", // Coral
+];
+
+
+  const orderColorMap = new Map<string, string>();
+  let colorIndex = 0;
+
+  const getColorForOrder = (order: string) => {
+    if (!orderColorMap.has(order)) {
+      orderColorMap.set(order, COLORS[colorIndex % COLORS.length]);
+      colorIndex++;
+    }
+    return orderColorMap.get(order)!;
+  };
+
+  filas.forEach((row, rowIndex) => {
+    const orderNumber = String(row[0]);
+    const bgColor = getColorForOrder(orderNumber);
+
+    columnas.forEach((_, colIndex) => {
       const cellRef = XLSX.utils.encode_cell({
         r: headerRowIndex + 1 + rowIndex,
         c: colIndex,
       });
+
       if (worksheet[cellRef]) {
-        worksheet[cellRef].s = highlightColumnStyle;
+        worksheet[cellRef].s = {
+          fill: { fgColor: { rgb: bgColor } },
+        };
       }
     });
-  });
+  }); 
 
-  /* ================= ANCHO DE COLUMNAS ================= */
+  /* ================= ANCHO COLUMNAS ================= */
   worksheet["!cols"] = [
     { wch: 15 },
     { wch: 35 },
@@ -183,6 +301,9 @@ const handleExportExcel = () => {
     { wch: 20 },
     { wch: 30 },
     { wch: 30 },
+    { wch: 40 },
+    { wch: 30 },
+    { wch: 18 },
   ];
 
   /* ================= EXPORTAR ================= */
@@ -194,6 +315,125 @@ const handleExportExcel = () => {
     `reporte_ordenes_${Date.now()}.xlsx`
   );
 };
+
+
+
+//   /* ================= HOJA ================= */
+//   const worksheet = XLSX.utils.aoa_to_sheet([
+//     ...encabezado,
+//     columnas,
+//     ...filas,
+//   ]);
+
+//   /* ================= ESTILOS ================= */
+
+//   // Título
+//   const titleStyle = {
+//     font: { bold: true, sz: 14 },
+//   };
+
+//   // 🟢 Cliente (encabezado)
+//   const clienteHeaderStyle = {
+//     font: { bold: true },
+//     fill: { fgColor: { rgb: "39FF14" } }, // verde fosforescente
+//     alignment: { vertical: "center" },
+//   };
+
+//   // Encabezados de tabla
+//   const tableHeaderStyle = {
+//     font: { bold: true, color: { rgb: "FFFFFF" } },
+//     fill: { fgColor: { rgb: "0D6EFD" } },
+//     alignment: { horizontal: "center", vertical: "center" },
+//   };
+
+//   // 🟡 Columnas destacadas
+//   const highlightColumnStyle = {
+//     fill: { fgColor: { rgb: "27F56F" } }, // amarillo suave
+//   };
+
+//   /* ================= APLICAR ESTILOS ================= */
+
+//   // Título
+//   worksheet[XLSX.utils.encode_cell({ r: 0, c: 0 })].s = titleStyle;
+
+//   // 🟢 Cliente
+//   worksheet[XLSX.utils.encode_cell({ r: 1, c: 0 })].s = clienteHeaderStyle;
+
+//   // Encabezados de tabla
+//   const headerRowIndex = encabezado.length;
+//   columnas.forEach((_, colIndex) => {
+//     const cellRef = XLSX.utils.encode_cell({
+//       r: headerRowIndex,
+//       c: colIndex,
+//     });
+//     worksheet[cellRef].s = tableHeaderStyle;
+//   });
+
+//   // 🟡 Resaltar columnas: Orden (0), Estado (3), Fecha (4)
+//   filas.forEach((_, rowIndex) => {
+//     [0, 3, 4].forEach((colIndex) => {
+//       const cellRef = XLSX.utils.encode_cell({
+//         r: headerRowIndex + 1 + rowIndex,
+//         c: colIndex,
+//       });
+//       if (worksheet[cellRef]) {
+//         worksheet[cellRef].s = highlightColumnStyle;
+//       }
+//     });
+//   });
+
+//   /* ================= ANCHO DE COLUMNAS ================= */
+//   // worksheet["!cols"] = [
+//   //   { wch: 15 },
+//   //   { wch: 35 },
+//   //   { wch: 22 },
+//   //   { wch: 15 },
+//   //   { wch: 20 },
+//   //   { wch: 30 },
+//   //   { wch: 30 },
+//   // ];
+
+
+// worksheet["!cols"] = [
+//   { wch: 15 }, // Orden
+//   { wch: 35 }, // Paciente
+//   { wch: 22 }, // Documento
+//   { wch: 15 }, // Estado
+//   { wch: 20 }, // Fecha
+//   { wch: 30 }, // Cliente
+//   { wch: 30 }, // Tarifa
+//   { wch: 40 }, // Examen
+//   { wch: 18 }, // Precio
+//   { wch: 40 }, // Observaciones
+// ];
+
+
+// filas.forEach((_, rowIndex) => {
+//   if (rowIndex % 2 === 0) {
+//     columnas.forEach((_, colIndex) => {
+//       const cellRef = XLSX.utils.encode_cell({
+//         r: headerRowIndex + 1 + rowIndex,
+//         c: colIndex,
+//       });
+//       if (worksheet[cellRef]) {
+//         worksheet[cellRef].s = {
+//           fill: { fgColor: { rgb: "F5F7FA" } },
+//         };
+//       }
+//     });
+//   }
+// });
+
+
+//   /* ================= EXPORTAR ================= */
+//   const workbook = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte");
+
+//   XLSX.writeFile(
+//     workbook,
+//     `reporte_ordenes_${Date.now()}.xlsx`
+//   );
+// };
 
 
   /* ================= CARGA ================= */
@@ -356,6 +596,7 @@ const handleExportExcel = () => {
           <option value="REGISTRADA">Registrada</option>
           <option value="EN CURSO">En curso</option>
           <option value="RECHAZADA">Rechazada</option>
+          <option value="COMPLETADA">Completada</option>
         </Form.Select>
 
         {/* BUSCADOR */}
@@ -542,10 +783,6 @@ const handleExportExcel = () => {
 };
 
 export default GestorDeNovedades;
-
-
-
-
 
 
 

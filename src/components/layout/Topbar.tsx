@@ -7,8 +7,9 @@ import {
   Modal,
   Button,
   ListGroup,
+  Accordion,
 } from "react-bootstrap";
-import { FiBell, FiUser } from "react-icons/fi";
+import { FiBell, FiHelpCircle, FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../socket/socket";
 
@@ -17,9 +18,40 @@ interface TopbarProps {
   onLogout: () => void;
 }
 
+
+
+
+
+
 const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
+
+const videoGuides = [
+  {
+    id: 1,
+    title: "Crear PreOrden",
+    description: "Paso a paso para crear una nueva PreOrden",
+    src: "/videos/ComoCrearPreOrden.mp4",
+  },
+  {
+    id: 2,
+    title: "Generar Reportes",
+    description: "Guía para generar reportes del sistema",
+    src: "/videos/GenerarReportes.mp4",
+  },
+  {
+    id: 3,
+    title: "Muestras Registradas",
+    description: "Cómo consultar y gestionar muestras registradas",
+    src: "/videos/MuestrasRegistradas.mp4",
+  },
+];
+
+
+
+
   const [userName, setUserName] = useState("Usuario");
   const [showModal, setShowModal] = useState(false);
+  const [showModalAyuda, setShowModalAyuda] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const navigate = useNavigate();
 
@@ -124,6 +156,8 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
             >
               <FiUser size={20} className="me-2 text-primary" />
               <span className="fw-semibold text-dark">{userName}</span>
+                
+              
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
@@ -139,8 +173,90 @@ const Topbar: React.FC<TopbarProps> = ({ pageTitle, onLogout }) => {
               </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
+
+<Nav.Link
+            className="position-relative me-3"
+            onClick={() => setShowModalAyuda(true)}
+          >
+            <FiHelpCircle size={20} />
+            <span className="fw-semibold text-dark">Ayuda</span>
+            {/* {notifications.length > 0 && (
+              <Badge
+                bg="danger"
+                pill
+                className="position-absolute top-0 start-100 translate-middle"
+              >
+                {notifications.length}
+              </Badge>
+            )} */}
+          </Nav.Link>
+
         </Nav>
       </Navbar>
+
+
+ {/* Modal de Ayuda */}
+<Modal
+  show={showModalAyuda}
+  onHide={() => setShowModalAyuda(false)}
+  centered
+  size="lg"
+>
+  <Modal.Header closeButton className="bg-light">
+    <Modal.Title>🆘 Centro de Ayuda</Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body>
+    {videoGuides.length === 0 ? (
+      <p className="text-center text-muted">
+        No hay guías disponibles
+      </p>
+    ) : (
+      <Accordion flush>
+  {videoGuides.map((video, index) => (
+    <Accordion.Item eventKey={index.toString()} key={video.id}>
+      <Accordion.Header>
+        🎥 {video.title}
+      </Accordion.Header>
+
+      <Accordion.Body>
+        <p className="text-muted mb-2">
+          {video.description}
+        </p>
+
+        <div className="ratio ratio-16x9 rounded overflow-hidden border">
+          <video
+            src={video.src}
+            controls
+            preload="metadata"
+            className="w-100 h-100"
+          >
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+      </Accordion.Body>
+    </Accordion.Item>
+  ))}
+</Accordion>
+
+    )}
+  </Modal.Body>
+
+  <Modal.Footer>
+    <Button
+      variant="outline-secondary"
+      size="sm"
+      onClick={() => setShowModalAyuda(false)}
+    >
+      Cerrar
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
+
+{/* ///modal para notificaciones */}
+
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-light">

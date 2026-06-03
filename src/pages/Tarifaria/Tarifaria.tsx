@@ -56,7 +56,7 @@ function Tarifaria() {
 
     
      
-        document.title = "Tarifaria - HE";
+        document.title = "Tarifario - HE";
       
     
 
@@ -142,6 +142,7 @@ function Tarifaria() {
     return selectedTariff.products.filter(
       (p) =>
         p.name.toLowerCase().includes(term) ||
+        p.altCode.toLowerCase().includes(term)||
         p.code.toLowerCase().includes(term)
     );
   }, [selectedTariff, searchTerm]);
@@ -202,7 +203,7 @@ function Tarifaria() {
               {/* Buscador */}
               <InputGroup className="mb-3" style={{ maxWidth: "400px" }}>
                 <FormControl
-                  placeholder="Buscar por código o nombre..."
+                  placeholder="Buscar por código, sigla o Nombre..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -225,6 +226,7 @@ function Tarifaria() {
                   <thead className="table-light" style={{ position: "sticky", top: 0 }}>
                     <tr>
                       <th style={{ width: "20%" }}>Código</th>
+                      <th style={{ width: "20%" }}>Sigla</th>
                       <th>Nombre</th>
                       <th style={{ width: "20%" }}>Precio</th>
                     </tr>
@@ -233,6 +235,7 @@ function Tarifaria() {
                     {filteredProducts.length > 0 ? (
                       filteredProducts.map((prod) => (
                         <tr key={prod.productId}>
+                          <td>{prod.altCode}</td>
                           <td>{prod.code}</td>
                           <td>{prod.shortName || prod.name}</td>
                           <td>${prod.price.toLocaleString("es-CO")}</td>

@@ -70,7 +70,8 @@ const PatientStep: React.FC<PatientStepProps> = ({
     const fetchDocumentTypes = async () => {
       try {
         const response = await axios.get(
-          "http://172.16.2.20:3000/api/v1/higuera-escalante/code-system/colombian-identifiers"
+          /* "http://172.16.2.20:3000/api/v1/higuera-escalante/code-system/colombian-identifiers" */
+		  "https://clientes.higueraescalante.com/api/v1/higuera-escalante/code-system/colombian-identifiers"
         );
         setDocumentTypes(response.data || []);
       } catch (error) {
@@ -85,7 +86,7 @@ const PatientStep: React.FC<PatientStepProps> = ({
     const fetchDivipola = async () => {
       try {
         const response = await axios.get(
-          "http://172.16.2.20:3000/api/v1/higuera-escalante/code-system/divipola"
+          "https://clientes.higueraescalante.com/api/v1/higuera-escalante/code-system/divipola"
         );
         const regions = response.data[0]?.regions || [];
         const formattedRegions: RegionOption[] = regions.map((r: any) => ({
@@ -374,7 +375,7 @@ const PatientStep: React.FC<PatientStepProps> = ({
       )}
 
       {/* Observaciones opcional */}
-      <h5 className="mt-4">📝 Observaciones</h5>
+      <h5 className="mt-4">📝 Observaciones <small>(Datos clinicos, Medicamentos)</small></h5>
       <Form.Control
         as="textarea"
         rows={3}

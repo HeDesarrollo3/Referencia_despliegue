@@ -1,3 +1,4 @@
+// src/pages/PreRegistro/services/api.ts
 import axios from "axios";
 
 //const API_URL = "http://localhost:3000/api/v1/higuera-escalante";
@@ -6,6 +7,7 @@ const API_URL = `${process.env.REACT_APP_API_URL}`;
 
 
 //buscar paciente por tipo y número de identificación
+
 export const findPatient = async (token: string, identificationType: string, identification: string, birthDate?: any) => {
   const res = await axios.post(
     `${API_URL}/patients/find-identifier`,
@@ -17,7 +19,7 @@ export const findPatient = async (token: string, identificationType: string, ide
 };
 
 
-// ✅ Registro de paciente
+// ✅ Registro de paciente (CORREGIDA)
 export const registerPatient = async (token: string, data: any) => {
   try {
     const res = await axios.post( 
@@ -56,14 +58,16 @@ export const registerPatient = async (token: string, data: any) => {
 };
 
 
-// ✅ CIE10
+// ✅ CIE10 no requiere autenticación y es GET
 export const getCie10 = async () => {
   const res = await axios.get(`${API_URL}/code-system/international-cie10`);
+  // Devuelve el array directamente
   return res.data || [];
 };
 
 
-// productos tarifario
+// productos tarifario y registrar orden sí requieren token y son POST
+
 export const getTariffProducts = async (token: string) => {
   const res = await axios.post(
     `${API_URL}/tariff-product`,
@@ -75,16 +79,19 @@ export const getTariffProducts = async (token: string) => {
 };
 
 
+
 //registro preorden
+
 export const registerOrder = async (token: string, formData: any) => {
+  //  limpiamos el payload
   const payload: any = {
     cie10: formData.cie10,
     priority: formData.priority,
     observation: formData.observation,
-    patientId: formData.patientId,
+6    patientId: formData.patientId,
     customerAccountId: formData.customerAccountId,
     tariffId: formData.tariffId,
-    products: formData.products.filter((p: any) => p.productId !== ""),
+    products: formData.products.filter((p: any) => p.productId !== ""), // quitamos vacíos
   };
 
   try {
@@ -101,8 +108,7 @@ export const registerOrder = async (token: string, formData: any) => {
   }
 };
 
-
-// clientes
+// Obtiene todas cuentas
 export const getCustomer = async (token: string) => {
   const res = await axios.post(
     `${API_URL}/customers`,
@@ -112,7 +118,6 @@ export const getCustomer = async (token: string) => {
   return res.data.customers || [];
 };
 
-
 export const getCustomerTariffProducts = async (token: string, customerid: string) => {
   const res = await axios.post(
     `${API_URL}/tariff-product/by-account/${customerid}`,
@@ -121,10 +126,139 @@ export const getCustomerTariffProducts = async (token: string, customerid: strin
   );
 
   return res.data.customerAccounts || [];
+
+  // Acceder a los productos de tarifa del primer cliente en la lista
+  //const customerAccounts = res.data.customerAccounts || [];
+  //if (customerAccounts.length > 0) {
+  //  return customerAccounts[0].tariff?.products || []; // Devuelve los productos de la primera cuenta del cliente
+  //}
+
+  //return []; // Devuelve un array vacío si no hay cuentas de cliente
 };
 
 
-// pre-registros
+// /// ✅ obtener lista de pre-registros (órdenes)
+
+// export const getPreRegistros = async (token: string) => {
+//   try {
+//     const res = await axios.post(
+//       `${API_URL}/orders/by-term/`,
+//       {},
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+
+//     const pacientes = res.data;
+//     console.log("📌 Pre-registros desde API:", pacientes);
+
+//     // ✅ Transformamos pacientes + órdenes + productos
+//     const orders = pacientes.flatMap((p: any) =>
+//       (p.orders || []).flatMap((o: any) =>
+//         (o.products || []).map((prod: any) => ({
+//           orderId: o.orderId,
+//           orderNumber: o.orderNumber,
+//           state: o.state,
+//           creationDate: o.creationDate,
+//           observation: o.observation,
+
+//           // ✅ DATOS DEL PACIENTE
+//           patientId: p.patientId,
+//           identification: p.identification,
+//           identificationType: p.identificationType,
+//           patientName: `${p.firstName ?? ""} ${p.middleName ?? ""} ${p.lastName ?? ""} ${p.surName ?? ""}`.trim(),
+//           gender: p.gender,
+//           birthDate: p.birthDate,
+//           mobileNumber: p.mobileNumber,
+//           email: p.email,
+
+//           // ✅ DATOS DEL PRODUCTO
+//           productCode: prod.product?.code ?? "",
+//           productName: prod.product?.name ?? "",
+//           price: prod.price ?? 0,
+//           quantity: prod.quantity ?? 0,
+//           pendingPayment: prod.pendingPayment ?? 0,
+
+//           // ✅ CLIENTE Y TARIFA
+//           customerId: o.customer?.customerId ?? "",
+//           customerAccountId: o.customerAccountId,
+//           tariffId: o.tariffId,
+//           customerName: o.customer?.name ?? "",
+//           customerAccountName: o.customerAccount?.name ?? "",
+//           tariffName: o.tariff?.name ?? "",
+//         }))
+//       )
+//     );
+
+//     console.log("✅ Órdenes transformadas:", orders);
+//     return orders;
+//   } catch (err: any) {
+//     console.error("❌ Error al obtener pre-registros:", err.response?.data || err.message);
+//     throw err;
+//   }
+// };
+
+
+
+// export const getPreRegistros = async (token: string) => {
+//   try {
+//     const res = await axios.post(
+//       `${API_URL}/orders/by-term/`,
+//       {},
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+
+//     const pacientes = res.data;
+//     console.log("📌 Pre-registros desde API:", pacientes);
+
+//     // ✅ Transformamos para que cada preregistro tenga patientName, orderNumber y orderCreationDate
+//     const registros = pacientes.flatMap((p: any) =>
+//       (p.orders || []).map((o: any) => ({
+//         patientId: p.patientId,
+//         identification: p.identification,
+//         identificationType: p.identificationType,
+//         patientName: `${p.firstName ?? ""} ${p.middleName ?? ""} ${p.lastName ?? ""} ${p.surName ?? ""}`.trim(),
+//         gender: p.gender,
+//         birthDate: p.birthDate,
+//         mobileNumber: p.mobileNumber,
+//         email: p.email,
+//         state: o.state,
+
+//         // 👇 lo que quieres mostrar
+//         orderId: o.orderId,
+//         orderNumber: o.orderNumber,
+//         orderCreationDate: o.creationDate,
+//         orderState: o.state,
+//         orderObservation: o.observation,
+//         orderCie10: o.cie10,
+//         orderPriority: o.priority,
+//         customerAccountId: o.customerAccountId,
+//         tariffId: o.tariffId,
+//         products: o.products || [],
+
+//         customerAccountName: o.customerAccount?.name || "",
+//         customerId: o.customer?.customerId || "",
+//         customerName: o.customer?.name || "",
+//         tariffName: o.tariff?.name || "",
+//       }))
+//     );
+
+//     console.log("✅ Registros transformados:", registros);
+
+//     return registros;
+    
+//   } catch (err: any) {
+//     console.error("❌ Error al obtener pre-registros:", err.response?.data || err.message);
+//     throw err;
+//   }
+// };
+
 export const getPreRegistros = async (token: string) => {
   try {
     const res = await axios.post(
@@ -139,10 +273,12 @@ export const getPreRegistros = async (token: string) => {
 
     console.log("📌 RAW respuesta:", res.data);
 
+    // ✅ Ahora sabemos que el array está en res.data.data
     const pacientes = Array.isArray(res.data.data) ? res.data.data : [];
 
     console.log("📌 Pacientes detectados:", pacientes);
 
+    // Transformamos los pre-registros
     const registros = pacientes.flatMap((p: any) =>
       (p.orders || []).map((o: any) => ({
         patientId: p.patientId,
@@ -155,6 +291,7 @@ export const getPreRegistros = async (token: string) => {
         email: p.email,
         state: o.state,
 
+        // Datos de orden
         orderId: o.orderId,
         orderNumber: o.orderNumber,
         orderCreationDate: o.creationDate,
@@ -166,6 +303,7 @@ export const getPreRegistros = async (token: string) => {
         tariffId: o.tariffId,
         products: o.products || [],
 
+        // Datos de customer
         customerAccountName: o.customerAccount?.name || "",
         customerId: o.customer?.customerId || "",
         customerName: o.customer?.name || "",
@@ -182,6 +320,7 @@ export const getPreRegistros = async (token: string) => {
     throw err;
   }
 };
+
 
 
 // actualizar orden
@@ -211,8 +350,7 @@ export const updateOrder = async (token: string, orderId: string, orderData: any
   }
 };
 
-
-// cambiar contraseña usuario
+// ✅ Cambiar contraseña de usuario
 export const changeUserPassword = async (token: string, data: any) => {
   try {
     const body = {
@@ -242,10 +380,9 @@ export const changeUserPassword = async (token: string, data: any) => {
 };
 
 
-// ✅ SOLO AQUÍ SE HIZO EL CAMBIO
 export const changePassword = async (token: string, body: any) => {
   const response = await fetch(
-    `${API_URL}/users/change-password`, // 
+    "http://localhost:3000/api/v1/higuera-escalante/users/change-password",
     {
       method: "PATCH",
       headers: {
@@ -256,15 +393,12 @@ export const changePassword = async (token: string, body: any) => {
     }
   );
 
- if (!response.ok) {
-  const errorData = await response.json();
-
-  if (response.status === 404) {
-    throw new Error("USER_NOT_FOUND");
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    throw new Error("GENERAL_ERROR");
   }
-
-  throw new Error(errorData.message || "GENERAL_ERROR");
-}
 
   return response.json();
 };

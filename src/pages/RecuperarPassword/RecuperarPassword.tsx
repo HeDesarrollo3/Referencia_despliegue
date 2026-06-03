@@ -41,11 +41,13 @@ const ChangePasswordPage: React.FC = () => {
 
       setMessage("Contraseña actualizada con éxito.");
     } catch (err: any) {
-      if (err.message === "USER_NOT_FOUND") {
-        setError("Usuario no encontrado o no registrado. Por favor regístrese primero o comuníquese con sistemas.");
-      } else {
-        setError("No se pudo actualizar la contraseña. Intente nuevamente.");
-      }
+  console.log("ERROR FRONT:", err);
+
+  if (err.message === "USER_NOT_FOUND") {
+    setError("Usuario no encontrado o no registrado.");
+  } else {
+    setError(err.message || "No se pudo actualizar la contraseña.");
+  }
     } finally {
       setLoading(false);
     }

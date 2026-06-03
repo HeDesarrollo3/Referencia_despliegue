@@ -10,6 +10,7 @@ import {
   FiXCircle,
   FiCheckCircle,
   FiAlertCircle,
+  FiSearch,
   FiFileText,
   FiClipboard,
 } from "react-icons/fi";
@@ -54,7 +55,7 @@ const Dashboard: React.FC = () => {
       icon: <RiTestTubeFill size={32} className="text-danger mb-3" />,
     },
 	{
-      title: "Tarifaria",
+      title: "Tarifario",
       text: "Lista de productos tarifarios.",
       route: "/tarifaria",
       icon: <FiClipboard size={32} className="text-warning mb-3" />,
@@ -123,8 +124,27 @@ const Dashboard: React.FC = () => {
               <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
                 <Card.Body className="d-flex flex-column align-items-center text-center">
                   <FiSend size={32} className="text-warning mb-3" />
-                  <Card.Title className="fw-semibold">Enviados a Silhe</Card.Title>
-                  <Card.Text className="text-muted">{dashboardData.sentToSilhe} órdenes enviadas</Card.Text>
+                  <Card.Title className="fw-semibold">Enviadas a Silhe</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.sentToSilhe + dashboardData.completed} órdenes enviadas a silhe</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiSearch size={32} className="text-warning mb-3" />
+                  <Card.Title className="fw-semibold">Pendientes por completar en Silhe</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.sentToSilhe} órdenes pendientes</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+            
+            <Col md={8} lg={3} className="mb-3">
+              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
+                <Card.Body className="d-flex flex-column align-items-center text-center">
+                  <FiCheckCircle size={32} className="text-success mb-3" />
+                  <Card.Title className="fw-semibold">Ordenes Completadas</Card.Title>
+                  <Card.Text className="text-muted">{dashboardData.completed} órdenes completadas</Card.Text>
                 </Card.Body>
               </Card>
             </Col>
@@ -132,17 +152,8 @@ const Dashboard: React.FC = () => {
               <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
                 <Card.Body className="d-flex flex-column align-items-center text-center">
                   <FiXCircle size={32} className="text-danger mb-3" />
-                  <Card.Title className="fw-semibold">Rechazados</Card.Title>
+                  <Card.Title className="fw-semibold">Ordenes Rechazadas</Card.Title>
                   <Card.Text className="text-muted">{dashboardData.rejected} órdenes rechazadas</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={8} lg={3} className="mb-3">
-              <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/admin')}>
-                <Card.Body className="d-flex flex-column align-items-center text-center">
-                  <FiCheckCircle size={32} className="text-success mb-3" />
-                  <Card.Title className="fw-semibold">Completados</Card.Title>
-                  <Card.Text className="text-muted">{dashboardData.completed} órdenes completadas</Card.Text>
                 </Card.Body>
               </Card>
             </Col>
@@ -153,11 +164,11 @@ const Dashboard: React.FC = () => {
                 <Card className="shadow-sm h-100 border-0 rounded-3 card-hover" onClick={() => navigate('/user')}>
                   <Card.Body className="d-flex flex-column align-items-center text-center">
                     <FiUserCheck size={32} className={`mb-3 ${key === "registered" ? "text-primary" : key === "active" ? "text-success" : "text-danger"}`} />
-                    <Card.Title className="fw-semibold">Pacientes</Card.Title>
+                    <Card.Title className="fw-semibold">Usuarios</Card.Title>
                     <Card.Text className="text-muted">
-                      {key === "registered" && `${dashboardDataUser.registered ?? 0} pacientes registrados, pendientes de activar.`}
-                      {key === "active" && `${dashboardDataUser.active ?? 0} pacientes activos`}
-                      {key === "rejected" && `${dashboardDataUser.rejected ?? 0} pacientes rechazados`}
+                      {key === "registered" && `${dashboardDataUser.registered ?? 0} usuarios registrados, pendientes de activar.`}
+                      {key === "active" && `${dashboardDataUser.active ?? 0} usuarios activos`}
+                      {key === "rejected" && `${dashboardDataUser.rejected ?? 0} usuarios rechazados`}
                     </Card.Text>
                   </Card.Body>
                 </Card>

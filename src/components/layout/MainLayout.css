@@ -42,3 +42,7 @@
     padding-bottom: 200px !important;
   }
 }
+
+.main-area {
+  padding-bottom: 90px; /* ⬅️ espacio para el footer */
+}

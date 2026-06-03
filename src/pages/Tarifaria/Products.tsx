@@ -2,6 +2,7 @@ import React from "react";
 
 interface Product {
   productId: string;
+  altCode: string;
   code: string;
   name: string;
   price: number;
@@ -44,7 +45,10 @@ const Products: React.FC<ProductsStepProps> = ({ selectedProductId, productList,
       {selectedProduct && (
         <div className="p-2 bg-light rounded">
           <p className="mb-1">
-            <strong>Código:</strong> {selectedProduct.code}
+            <strong>Codigo:</strong> {selectedProduct.altCode}
+          </p>
+          <p className="mb-1">
+            <strong>Sigla:</strong> {selectedProduct.code}
           </p>
           <p className="mb-1">
             <strong>Nombre:</strong> {selectedProduct.name}

@@ -4,6 +4,9 @@ import DataTable from "react-data-table-component";
 import Swal from 'sweetalert2';
 import { Modal, Button, Card, ListGroup, Col, Row } from "react-bootstrap";
 import { Console } from "console";
+import AsyncSelect from "react-select/async"; // Asegúrate de instalar react-select
+import { getTariffProducts, getCustomer, getCustomerTariffProducts } from "../../services/api";
+import * as XLSX from 'xlsx';
 
 
 const API_URL = `${process.env.REACT_APP_API_URL}`;
@@ -11,9 +14,9 @@ const API_URL = `${process.env.REACT_APP_API_URL}`;
 const AdminPage: React.FC = () => {
 
 
- 
-    document.title = " Ordenes- HE";
-  
+
+  document.title = " Ordenes- HE";
+
 
 
   const [orders, setOrders] = useState<any[]>([]);
@@ -23,10 +26,19 @@ const AdminPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   //const [selectedOrder, setSelectedOrder] = useState<any>(null); // Estado para la orden seleccionada
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para el modal
-  const token = localStorage.getItem("token");
   const user_role = localStorage.getItem("user_role");
   const [accounts, setAccounts] = useState<any[]>([]); // Inicializa como un array vacío
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [startDate, setStartDate] = useState(''); // Estado para la fecha inicial
+  const [endDate, setEndDate] = useState(''); // Estado para la fecha final
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const token = localStorage.getItem("token") || "";
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [NamePriority, setSelectedNamePriority] = useState<string | null>(null);
+
+  
+
+
 
   interface Product {
     orderProductId: string;
@@ -36,6 +48,26 @@ const AdminPage: React.FC = () => {
     pendingPayments: number;
     code: string;
     altCode: string;
+    state: string;
+    comments: string;
+  }
+  interface Customer {
+    customerId: string;
+    name: string;
+  }
+  interface Account {
+    customerAccountId: string;
+    code: string;
+    altCode: string;
+    name: string;
+    state: string;
+    tariff: Tariff;
+  }
+  interface Tariff {
+    tariffId: string;
+    name: string;
+    state: string;
+    products: Product[];
   }
 
   interface Order {
@@ -62,6 +94,41 @@ const AdminPage: React.FC = () => {
     birthDate: string;
     // Agrega otros campos según sea necesario
   }
+  interface ProductExel {
+  orderProductId: string;
+  productId: string;
+  name: string;
+  price: number;
+  pendingPayments: number;
+  code: string;
+  altCode: string;
+}
+
+interface OrderExcel {
+  orderId: string;
+  orderNumber: string;
+  state: string;
+  creationDate: string;
+  observation: string;
+  patientName: string;
+  identification: string;
+  identificationType: string;
+  customerName: string;
+  customerId: string;
+  customerAccountId: string;
+  customerAccountName: string;
+  tariffName: string;
+  tariffId: string;
+  cie10: string;
+  priority: string;
+  patientId: string;
+  email: string;
+  gender: string;
+  mobileNumber: string;
+  birthDate: string;
+  products: Product[];
+}
+
   const customStyles = {
     headCells: {
       style: {
@@ -85,7 +152,8 @@ const AdminPage: React.FC = () => {
         color: '#444', // Color del texto
         cursor: 'pointer', // Cambiar el cursor al pasar sobre las filas
       },
-      stripedStyle: {
+      stripedStyle: { 
+
         backgroundColor: '#f2f2f2', // Fondo alternado para filas
       },
       hoverStyle: {
@@ -97,19 +165,80 @@ const AdminPage: React.FC = () => {
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  const handleCustomerSelect = async (selected: any) => {
+    const customerId = selected?.value || "";
+    setSelectedCustomerId(customerId === "" ? null : customerId);
+    //console.log("Cliente seleccionado ID:", customerId); // Mostrar el ID del cliente seleccionado
+  };
+
+  const loadCustomerOptions = async (inputValue: string) => {
+    //console.log("Buscando clientes para:", inputValue); // Verifica el valor de inputValue
+    try {
+      // // Filtra los clientes que coincidan con el inputValue
+      return customers
+        .filter(customer => customer.name.toLowerCase().includes(inputValue.toLowerCase()))
+        .map(customer => ({
+          value: customer.customerId,
+          label: customer.name,
+        }));
+    } catch (error) {
+      console.error("Error al cargar opciones de clientes:", error);
+      return []; // Devuelve un array vacío en caso de error
+    }
+  };
+  function getLocalIP(callback: (ip: string) => void): void  {
+    const rtc = new RTCPeerConnection({ iceServers: [] });
+    rtc.createDataChannel('');
+    rtc.createOffer().then(offer => rtc.setLocalDescription(offer));
+    
+    rtc.onicecandidate = (ice) => {
+        if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+        const parts = ice.candidate.candidate.split(' ');
+        const ip = parts[4];
+        callback(ip);
+        rtc.close();
+    };
+}
+
+
   // Función para obtener órdenes por estado
   const fetchOrders = async (orderState: string) => {
-    console.log(`${API_URL}/orders/by-term`);
+    //console.log(`${API_URL}/orders/by-term`);
+    //console.log("estado ordenes:", orderState);
     try {
-      const response = await axios.post(
-        `${API_URL}/orders/by-term` ,
-        { orderState },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      var response =null
+      if (orderState === "TODOS") { 
+        response= await axios.post(
+          `${API_URL}/orders/by-term`,
+          {
+              startDate: startDate,   // Debe estar en formato yyyy-mm-dd
+              endDate: endDate,
+              customerId : selectedCustomerId        // Debe estar en formato yyyy-mm-dd
+            },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }else{
+        response= await axios.post(
+          `${API_URL}/orders/by-term`,
+          {
+              orderState: orderState, // Asegúrate de que esto sea una cadena válida
+              startDate: startDate,   // Debe estar en formato yyyy-mm-dd
+              endDate: endDate,
+              customerId : selectedCustomerId        // Debe estar en formato yyyy-mm-dd
+            },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
       );
+      }
+
+      
 
       const ordersData = response.data.data;
 
@@ -147,7 +276,6 @@ const AdminPage: React.FC = () => {
           })),
         }))
       );
-      //console.log("✅ Órdenes transformadas:", transformedOrders);
       setOrders(transformedOrders);
       setFilteredOrders(transformedOrders);
       setErrorMessage(null);
@@ -157,7 +285,7 @@ const AdminPage: React.FC = () => {
         setFilteredOrders([]);
         setErrorMessage("No hay registros disponibles.");
       } else {
-        console.error("❌ Error al obtener órdenes:", error);
+        //console.error("❌ Error al obtener órdenes:", error);
         setErrorMessage("Ocurrió un error al obtener las órdenes.");
       }
     }
@@ -165,8 +293,32 @@ const AdminPage: React.FC = () => {
 
   // Cargar órdenes con estado "REGISTRADA" al cargar la página
   useEffect(() => {
-    fetchOrders("REGISTRADA");
+
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Formato yyyy-mm-dd
+
+    setStartDate(formattedDate);
+    setEndDate(formattedDate);
+    
+    //console.log("Fecha de hoy establecida en:", formattedDate);
+    //console.log("Fechas:", startDate );
+    const fetchAccountsAndCustomers = async () => {
+      try {
+        const customersData = await getCustomer(token);
+        setCustomers(customersData); // Cargar clientes 
+      } catch (error) {
+        //console.error("❌ Error cargando tarifas o clientes:", error);
+      } finally {
+      }
+    };
+    fetchAccountsAndCustomers();
   }, []);
+
+    useEffect(() => {
+    //console.log("fechas useEffect:", startDate); // Aquí verás el valor actualizado
+    //console.log("selectedCustomerId useEffect:", selectedCustomerId); // Aquí verás el valor actualizado
+    fetchOrders(state);
+  }, [startDate, endDate,selectedCustomerId]); // Dependencia en startDate
 
   // Función para manejar el texto de búsqueda
   const handleSearch = (text: string) => {
@@ -192,9 +344,57 @@ const AdminPage: React.FC = () => {
   const handleDetails = (order: any) => {
     console.log("Detalles de la orden:", order);
     setSelectedOrder(order); // Guardar la orden seleccionada
+    if (order.priority === '1') {
+      setSelectedNamePriority('URGENTE'); // Clase para urgente
+    } else if (order.priority === '3') {
+      setSelectedNamePriority('NORMAL'); // Clase para normal
+    }
     fetchAccounts(order.customerId); // Obtener las cuentas para el cliente seleccionado
     setIsModalOpen(true); // Abrir el modal
   };
+
+  const downloadExcel = () => {
+    // Aplanar los datos
+    const flattenedData = filteredOrders.flatMap((order: OrderExcel) => {
+      return order.products.map((product: ProductExel) => ({
+       // orderId: order.orderId,
+        'NumeroOrden': order.orderNumber,
+        state: order.state,
+        'FechaCreacion': order.creationDate,
+        observation: order.observation,
+        identificationType: order.identificationType,
+        identification: order.identification,
+        patientName: order.patientName,
+        'Cliente': order.customerName,
+        //customerId: order.customerId,
+        //customerAccountId: order.customerAccountId,
+        'Cuenta': order.customerAccountName,
+        //tariffName: order.tariffName,
+        //tariffId: order.tariffId,
+        cie10: order.cie10,
+        priority: order.priority,
+        //patientId: order.patientId,
+        email: order.email,
+        gender: order.gender,
+        mobileNumber: order.mobileNumber,
+        birthDate: order.birthDate,
+        //productId: product.productId,
+        'Producto': product.name,
+        'Precio': product.price,
+        'Codigo': product.code,
+        'Cups': product.altCode,
+      }));
+    });
+
+    // Crea una hoja de trabajo a partir de los datos aplanados
+    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Órdenes");
+
+    // Genera el archivo Excel y desencadena la descarga
+    XLSX.writeFile(workbook, "ordenes.xlsx");
+  };
+
 
 
   // Función para cerrar el modal
@@ -204,7 +404,7 @@ const AdminPage: React.FC = () => {
   };
 
   // Función para manejar el botón "Eliminar producto"
-  const handleDeleteProduct = async (orderProductId: string) => {
+  const handleDeleteProduct2 = async (orderProductId: string) => {
     const orderId = selectedOrder?.orderId; // Asegúrate de que selectedOrder no sea null
     if (!selectedOrder) return; // Maneja el caso donde selectedOrder es null
 
@@ -238,10 +438,10 @@ const AdminPage: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json(); // Leer el cuerpo de la respuesta
-          await Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al eliminar el producto: ' + errorData.message
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al eliminar el producto: ' + errorData.message
         });
         console.error('Error en la solicitud:', errorData);
         return;
@@ -277,6 +477,107 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  // Función para manejar el botón "Eliminar producto"
+ const handleDeleteProduct = async (orderProductId: string) => {
+    const orderId = selectedOrder?.orderId; // Asegúrate de que selectedOrder no sea null
+    if (!selectedOrder) return; // Maneja el caso donde selectedOrder es null
+
+    const { cie10, priority, patientId, customerAccountId, tariffId } = selectedOrder;
+
+    // Solicitar la observación al usuario
+    const observation = await Swal.fire({
+        title: 'Observación',
+        input: 'textarea',
+        inputPlaceholder: 'Escribe la razón para eliminar el producto...',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => result.value);
+
+    if (!observation) return; // Si el usuario cancela, no hacer nada
+
+    // Crear el nuevo arreglo de productos
+    const updatedProducts = selectedOrder.products.map((product: Product) => {
+        if (product.orderProductId === orderProductId) {
+            return {
+                ...product,
+                state: 'X', // Marcar el producto seleccionado con 'X'
+                comments: observation // Agregar la observación
+            };
+        } else {
+            return {
+                ...product,
+                state: 'A', // Marcar los demás productos con 'A'
+                comments: '' // Comentarios vacíos para los demás
+            };
+        }
+    });
+
+    // Crear el objeto que se enviará a la API
+    const requestBody = {
+        cie10,
+        priority,
+        observation, // Usar la observación proporcionada
+        patientId,
+        customerAccountId,
+        tariffId,
+        products: updatedProducts.map((product: Product) => ({
+            orderProductId: product.orderProductId,
+            productId: product.productId,
+            state: product.state,
+            comments: product.comments
+        }))
+    };
+    console.log('Cuerpo de la solicitud para eliminar producto:', requestBody);
+
+    try {
+        const response = await fetch(`${API_URL}/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json(); // Leer el cuerpo de la respuesta
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar el producto: ' + errorData.message
+            });
+            console.error('Error en la solicitud:', errorData);
+            return;
+        }
+
+        const data = await response.json();
+        await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: 'Orden actualizada con éxito.'
+        });
+        //console.log('Producto actualizado:', data);
+
+        // Actualizar el estado de selectedOrder con los productos filtrados
+        setSelectedOrder(prevOrder => ({
+            ...prevOrder!,
+            products: updatedProducts.filter(product => product.state === 'A') // Filtrar por estado 'A'
+        }));
+
+        // Aquí puedes actualizar el estado de orders y filteredOrders si es necesario
+        setOrders(prevOrders => prevOrders.map(order =>
+            order.orderId === orderId ? { ...order, products: updatedProducts.filter(product => product.state === 'A') } : order
+        ));
+        setFilteredOrders(prevFilteredOrders => prevFilteredOrders.map(order =>
+            order.orderId === orderId ? { ...order, products: updatedProducts.filter(product => product.state === 'A') } : order
+        ));
+        
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
+
   const handleSave = async () => {
     if (!selectedOrder) return; // Asegúrate de que selectedOrder no sea nulo
 
@@ -310,6 +611,32 @@ const AdminPage: React.FC = () => {
     // Si el usuario cancela, no hacer nada
     if (!newState) return;
 
+    // Inicializar la variable comment
+let comment = '';
+
+// Si el nuevo estado es "RECHAZADA", solicitar la razón
+if (newState === 'RECHAZADA') {
+    const { value: rejectionReason } = await Swal.fire({
+        title: 'Razón del rechazo',
+        input: 'textarea',
+        inputPlaceholder: 'Escribe la razón del rechazo...',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debes proporcionar una razón para el rechazo!';
+            }
+        }
+    });
+
+    // Si el usuario cancela, no hacer nada
+    if (!rejectionReason) return;
+
+    // Asignar la razón a la variable comment
+    comment = rejectionReason;
+}
+
     const { cie10, priority, observation, patientId, customerAccountId, tariffId, products } = selectedOrder;
 
     // Crear el objeto que se enviará a la API para actualizar los productos
@@ -321,7 +648,9 @@ const AdminPage: React.FC = () => {
       customerAccountId,
       tariffId,
       products: products.map((product: Product) => ({
-        productId: product.productId // Incluir todos los productos
+        orderProductId: product.orderProductId,
+        productId: product.productId, // Incluir todos los productos
+        state: 'A', // Marcar los demás productos con 'A'
       })),
     };
     console.log('Cuerpo de la solicitud para guardar:', requestBody);
@@ -352,13 +681,18 @@ const AdminPage: React.FC = () => {
       }
 
       // Cambiar el estado de la orden
-      const changeStateResponse = await fetch(`${API_URL}/orders/${orderId}/change-state?state=${newState}`, {
+      const changeStateResponse = await fetch(`${API_URL}/orders/${orderId}/change-state`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        //body: JSON.stringify({ orderState: newState }), // Enviar el nuevo estado
+        body: JSON.stringify(
+          { 
+            state: newState,
+            comments: comment // Comentarios vacíos para los demás
+          }
+        ), // Enviar el nuevo estado
       });
 
       if (!changeStateResponse.ok) {
@@ -374,7 +708,7 @@ const AdminPage: React.FC = () => {
       }
 
       const updatedOrderData = await changeStateResponse.json();
-      
+
       console.log('Estado de la orden actualizado:', updatedOrderData);
 
       // Aquí puedes actualizar el estado de orders y filteredOrders si es necesario
@@ -461,7 +795,7 @@ const AdminPage: React.FC = () => {
 
   return (
     <div>
-      <h1>Ordenes registradas</h1>
+      <h2>Ordenes registradas</h2>
       <p>Consulta de órdenes por estado</p>
 
       {/* Contenedor para el selector y el buscador */}
@@ -473,7 +807,7 @@ const AdminPage: React.FC = () => {
           marginBottom: "20px",
         }}
       >
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <label htmlFor="state" style={{ marginRight: "10px" }}>Estado:</label>
           <select
             id="state"
@@ -486,30 +820,77 @@ const AdminPage: React.FC = () => {
               padding: "10px",
               border: "1px solid #ccc",
               borderRadius: "5px",
+              marginRight: "10px", // Espacio entre el select y el siguiente elemento
+              minWidth: "150px", // Ancho mínimo para el select
             }}
           >
             <option value="REGISTRADA">REGISTRADA</option>
             <option value="EN CURSO">EN CURSO</option>
             <option value="RECHAZADA">RECHAZADA</option>
             <option value="COMPLETADA">COMPLETADA</option>
+            <option value="TODOS">TODOS</option>
           </select>
-          {/* <button
-            onClick={() => fetchOrders(state)}
-            style={{
-              marginLeft: "10px",
-              padding: "10px 15px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Buscar
-          </button> */}
-        </div>
 
-        <div>
+          <label htmlFor="startDate" style={{ marginRight: "10px" }}>Fecha Inicial:</label>
+          <input
+            type="date"
+            id="startDate"
+            value={startDate} // Usa el estado startDate
+            onChange={(e) => setStartDate(e.target.value)} // Asegúrate de tener una función setStartDate
+            style={{
+              padding: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              marginRight: "10px", // Espacio entre el input y el siguiente elemento
+            }}
+          />
+
+          <label htmlFor="endDate" style={{ marginRight: "10px" }}>Fecha Final:</label>
+          <input
+            type="date"
+            id="endDate"
+            value={endDate} // Usa el estado endDate
+            onChange={(e) => setEndDate(e.target.value)} // Asegúrate de tener una función setEndDate
+            style={{
+              padding: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              marginRight: "10px", // Espacio entre el input y el siguiente elemento
+            }}
+          />
+
+          <AsyncSelect
+            cacheOptions
+            loadOptions={loadCustomerOptions} // Cargar opciones de clientes
+            defaultOptions
+            placeholder="Buscar y seleccionar cliente..."
+            value={
+              selectedCustomerId
+                ? {
+                  value: selectedCustomerId,
+                  label: customers.find((c) => c.customerId === selectedCustomerId)?.name || selectedCustomerId,
+                }
+                : null
+            }
+            onChange={handleCustomerSelect} // Manejar selección de cliente
+            isClearable
+            styles={{
+              container: (provided) => ({
+                ...provided,
+                minWidth: '250px', // Ancho mínimo para el AsyncSelect
+                marginRight: "10px", // Espacio entre el AsyncSelect y el siguiente elemento
+              }),
+              control: (provided) => ({
+                ...provided,
+                minWidth: '250px', // Mantener un ancho mínimo
+                width: '100%', // Asegurarse de que el control use el 100% del contenedor
+              }),
+              menu: (provided) => ({
+                ...provided,
+                minWidth: '250px', // Mantener el ancho mínimo del menú desplegable
+              }),
+            }}
+          />
           <input
             type="text"
             placeholder="Buscar..."
@@ -527,6 +908,13 @@ const AdminPage: React.FC = () => {
 
 
       {/* Tabla con React DataTable */}
+      {/* <button onClick={downloadExcel} className="btn btn-primary mb-3">
+        Descargar Excel
+      </button> */}
+      <Button variant="outline-success" onClick={downloadExcel}>
+        <i className="bi bi-file-earmark-excel"></i> Descargar Excel
+      </Button>
+      <br />  <br />  
       <DataTable
         columns={columns}
         data={filteredOrders}
@@ -563,7 +951,7 @@ const AdminPage: React.FC = () => {
                   <Row className="mb-2">
                     <Col md={6}>
                       <p className="mb-1">
-                        <b>Nombre:</b> {selectedOrder.patientName} 
+                        <b>Nombre:</b> {selectedOrder.patientName}
                         <br /> <b>ESTADO:</b> {selectedOrder.state}
                       </p>
                     </Col>
@@ -623,6 +1011,12 @@ const AdminPage: React.FC = () => {
                   <p><b>Tarifa:</b> {selectedOrder.tariffName || "—"}</p>
                   <p><b>Estado:</b> {selectedOrder.state || "—"}</p>
                   <p><b>Observación:</b> {selectedOrder.observation || "Sin observaciones"}</p>
+                  <p>
+                    <b>Prioridad:</b>{' '}
+                    <span style={{ color: NamePriority === 'URGENTE' ? 'red' : 'blue' }}>
+                      {NamePriority}
+                    </span>
+                  </p>
                 </Card.Body>
               </Card>
 

@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-const API_URL = "http://172.16.2.20:3000/api/v1/higuera-escalante/auth/login";
+//const API_URL = "http://172.16.2.20:3000/api/v1/higuera-escalante/auth/login";
+const API_URL = `${process.env.REACT_APP_API_URL}/auth/login`;
 
 function Login() {
 
@@ -71,17 +72,42 @@ function Login() {
     <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light">
       <div className="card shadow p-4 rounded w-100" style={{ maxWidth: "400px" }}>
         {/* Logo */}
-        <img
-          src="/logo1.png"
-          alt="Logo HE"
-          className="mb-4 mx-auto d-block img-fluid"
-          style={{ maxWidth: "100px" }}
-        />
+      {/* Logo + Título */}
+<div className="text-center mt-2">
+  <img
+    src="/LabConnect_logo5.png"
+    alt="Logo HE"
+    className="img-fluid mb-3"
+    style={{ maxWidth: "225px", marginTop: "0px" }}
+  />
+
+  {/* <h3
+    className="fw-semibold mb-4"
+    style={{
+      fontFamily: "'Poppins', sans-serif",
+      letterSpacing: "1px",
+      fontWeight: 600
+    }}
+  >
+    <span style={{fontSize: "2rem", fontWeight: 600, color: "#7e7777" }}>LABConnect</span>
+    <span style={{fontSize: "2rem", color: "#404752" }}> </span>
+    <span
+      style={{
+        fontSize: "2rem",
+        marginLeft: "px",
+        color: "#e20909",
+        fontWeight: 600
+      }}
+    >
+       HE
+    </span>
+  </h3> */}
+</div>
 
         <div className="card-body">
-          <h3 className="card-title text-center mb-4 text-danger">
-            <i className="bi bi-person-circle me-2"></i> Ingreso a la Plataforma
-          </h3>
+          {/* <h3 className="card-title text-center mb-5 text-danger">
+            <i className="bi bi-person-circle me-2"></i> LABConnect  HE
+          </h3> */}
 
           <form onSubmit={handleSubmit}>
             {/* Tipo de Documento */}
